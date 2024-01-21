@@ -9,3 +9,9 @@ npx nx serve frontend
 
 npx nx format write
 ```
+
+Production Build :
+
+```bash
+npx nx run frontend:build-webpack:production
+```
