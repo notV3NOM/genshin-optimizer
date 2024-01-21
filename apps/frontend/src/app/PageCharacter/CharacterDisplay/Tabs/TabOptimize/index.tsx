@@ -87,6 +87,7 @@ import StatFilterCard from './Components/StatFilterCard'
 import { compactArtifacts, dynamicData } from './foreground'
 import useBuildResult from './useBuildResult'
 import useBuildSetting from './useBuildSetting'
+import SortCard from './Components/SortCard'
 
 const audio = new Audio('notification.mp3')
 export default function TabBuild() {
@@ -171,6 +172,9 @@ export default function TabBuild() {
     () => database.arts.followAny(setArtsDirty),
     [setArtsDirty, database]
   )
+
+  const [sortBase, setSortBase] = useState<string[]>(optimizationTarget)
+  const [ascending, setAscending] = useState<boolean>(false)
 
   const deferredArtsDirty = useDeferredValue(artsDirty)
   const deferredBuildSetting = useDeferredValue(buildSetting)
@@ -294,6 +298,7 @@ export default function TabBuild() {
     } = buildSetting
     if (!characterKey || !optimizationTarget) return
 
+    setSortBase(optimizationTarget)
     const split = compactArtifacts(
       filteredArts,
       mainStatAssumptionLevel,
@@ -745,6 +750,15 @@ export default function TabBuild() {
               showTooltip={!optimizationTarget}
             />
           </Box>
+          <Box>
+            <SortCard
+              sortBase={sortBase}
+              setSortBase={setSortBase}
+              ascending={ascending}
+              setAscending={setAscending}
+              optimizationTarget={optimizationTarget}
+            />
+          </Box>
           <CardLight>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -817,6 +831,8 @@ export default function TabBuild() {
                 disabled={!!generatingBuilds}
                 getLabel={getGraphBuildLabel}
                 setBuilds={setGraphBuilds}
+                sortBase={sortBase}
+                ascending={ascending}
               />
             )}
             <BuildList
@@ -826,6 +842,8 @@ export default function TabBuild() {
               compareData={compareData}
               disabled={!!generatingBuilds}
               getLabel={getNormBuildLabel}
+              sortBase={sortBase}
+              ascending={ascending}
             />
           </OptimizationTargetContext.Provider>
         </DataContext.Provider>
@@ -842,6 +860,8 @@ function BuildList({
   compareData,
   disabled,
   getLabel,
+  sortBase,
+  ascending,
 }: {
   builds: string[][]
   setBuilds?: (builds: string[][] | undefined) => void
@@ -850,7 +870,10 @@ function BuildList({
   compareData: boolean
   disabled: boolean
   getLabel: (index: number) => Displayable
+  sortBase: string[]
+  ascending: boolean
 }) {
+  if (ascending) builds = [...builds].reverse()
   const deleteBuild = useCallback(
     (index: number) => {
       if (setBuilds) {
@@ -867,8 +890,9 @@ function BuildList({
       <Suspense
         fallback={<Skeleton variant="rectangular" width="100%" height={600} />}
       >
-        {builds?.map(
-          (build, index) =>
+        {builds?.map((build, index) => {
+          index = ascending ? builds.length - 1 - index : index
+          return (
             characterKey &&
             data && (
               <DataContextWrapper
@@ -887,7 +911,8 @@ function BuildList({
                 />
               </DataContextWrapper>
             )
-        )}
+          )
+        })}
       </Suspense>
     ),
     [
@@ -899,6 +924,7 @@ function BuildList({
       getLabel,
       deleteBuild,
       setBuilds,
+      ascending,
     ]
   )
   return list
