@@ -22,9 +22,7 @@ function FooterContent() {
         gap={2}
       >
         <Typography variant="caption" sx={{ color: grey[200] }}>
-          <Trans t={t} i18nKey="ui:rightsDisclaimer">
-            Genshin Optimizer is not affiliated with or endorsed by HoYoverse.
-          </Trans>
+          <Trans t={t} i18nKey="ui:rightsDisclaimer"></Trans>
         </Typography>
         <Typography
           variant="caption"
@@ -35,17 +33,8 @@ function FooterContent() {
             i18nKey="ui:appVersion"
             values={{ version: packageInfo.version }}
           >
-            Genshin Optimizer Version:
-            <a
-              href={
-                process.env.NX_URL_GITHUB_GO_CURRENT_VERSION ||
-                `${process.env.NX_URL_GITHUB_GO}/releases`
-              }
-              target="_blank"
-              rel="noreferrer"
-            >
-              {{ version: packageInfo.version } as TransObject}
-            </a>
+            Optimizer Version:
+            <span>{{ version: packageInfo.version } as TransObject}</span>
           </Trans>
         </Typography>
       </Box>

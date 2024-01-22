@@ -145,15 +145,7 @@ export default function Header({ anchor }: { anchor: string }) {
   )
 }
 
-const maincontent = [
-  artifacts,
-  weapons,
-  characters,
-  tools,
-  scanner,
-  doc,
-  setting,
-] as const
+const maincontent = [artifacts, weapons, characters, setting] as const
 function HeaderContent({ anchor }: { anchor: string }) {
   const theme = useTheme()
   const isXL = useMediaQuery(theme.breakpoints.up('xl'))
