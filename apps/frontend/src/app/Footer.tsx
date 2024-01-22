@@ -34,7 +34,13 @@ function FooterContent() {
             values={{ version: packageInfo.version }}
           >
             Optimizer Version:
-            <span>{{ version: packageInfo.version } as TransObject}</span>
+            <a
+              href="https://github.com/notV3NOM/genshin-optimizer"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {{ version: packageInfo.version } as TransObject}
+            </a>
           </Trans>
         </Typography>
       </Box>

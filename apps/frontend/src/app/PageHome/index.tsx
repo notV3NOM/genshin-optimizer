@@ -47,24 +47,23 @@ export default function PageHome() {
 }
 
 function IntroCard() {
-  const { t } = useTranslation('page_home')
   return (
     <CardDark>
       <CardContent>
         <Typography variant="subtitle1">
-          <Trans t={t} i18nKey="intro">
-            The <strong>ultimate</strong>{' '}
-            <Link
-              href="https://genshin.mihoyo.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <i>Genshin Impact</i>
-            </Link>{' '}
-            calculator, GO will keep track of your artifact/weapon/character
-            inventory, and help you create the best build based on how you play,
-            with what you have.
-          </Trans>
+          The ultimate Genshin Impact calculator, GO will keep track of your
+          artifact/weapon/character inventory, and help you create the best
+          build based on how you play, with what you have.
+        </Typography>
+        <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
+          This was forked from{' '}
+          <Link
+            href="https://github.com/frzyc/genshin-optimizer"
+            target="_blank"
+            rel="noreferrer"
+          >
+            frzyc's Genshin Optimizer
+          </Link>
         </Typography>
       </CardContent>
     </CardDark>
