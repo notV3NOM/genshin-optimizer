@@ -172,7 +172,7 @@ function HeaderContent({ anchor }: { anchor: string }) {
     <Box>
       <AppBar
         position="static"
-        sx={{ bgcolor: '#343a40' }}
+        sx={{ bgcolor: 'rgb(24,24,24)' }}
         elevation={0}
         id={anchor}
       >
@@ -281,7 +281,7 @@ function MobileHeader({
   const { silly } = useContext(SillyContext)
   return (
     <>
-      <AppBar position="fixed" sx={{ bgcolor: '#343a40' }} elevation={0}>
+      <AppBar position="fixed" sx={{ bgcolor: 'rgb(24,24,24)' }} elevation={0}>
         <Drawer
           anchor="right"
           variant="temporary"

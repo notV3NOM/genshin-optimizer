@@ -3,7 +3,7 @@ Forked from https://github.com/frzyc/genshin-optimizer
 Dev Setup :
 
 ```bash
-git clone --recursive <>
+git clone --recursive https://github.com/notV3NOM/genshin-optimizer.git
 yarn
 npx nx serve frontend
 
