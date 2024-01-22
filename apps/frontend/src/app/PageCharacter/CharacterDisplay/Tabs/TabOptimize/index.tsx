@@ -88,6 +88,7 @@ import { compactArtifacts, dynamicData } from './foreground'
 import useBuildResult from './useBuildResult'
 import useBuildSetting from './useBuildSetting'
 import SortCard from './Components/SortCard'
+import { getDisplaySections } from '../../../../Formula/DisplayUtil'
 
 const audio = new Audio('notification.mp3')
 export default function TabBuild() {
@@ -299,6 +300,7 @@ export default function TabBuild() {
     if (!characterKey || !optimizationTarget) return
 
     setSortBase(optimizationTarget)
+    setAscending(false)
     const split = compactArtifacts(
       filteredArts,
       mainStatAssumptionLevel,
@@ -789,6 +791,8 @@ export default function TabBuild() {
                   onClick={() => {
                     setGraphBuilds(undefined)
                     buildResultDispatch({ builds: [], buildDate: 0 })
+                    setSortBase(optimizationTarget)
+                    setAscending(false)
                   }}
                 >
                   Clear Builds
@@ -833,6 +837,7 @@ export default function TabBuild() {
                 setBuilds={setGraphBuilds}
                 sortBase={sortBase}
                 ascending={ascending}
+                optimizationTarget={optimizationTarget}
               />
             )}
             <BuildList
@@ -844,6 +849,7 @@ export default function TabBuild() {
               getLabel={getNormBuildLabel}
               sortBase={sortBase}
               ascending={ascending}
+              optimizationTarget={optimizationTarget}
             />
           </OptimizationTargetContext.Provider>
         </DataContext.Provider>
@@ -862,27 +868,35 @@ function BuildList({
   getLabel,
   sortBase,
   ascending,
+  optimizationTarget,
 }: {
   builds: string[][]
   setBuilds?: (builds: string[][] | undefined) => void
-  characterKey?: '' | CharacterKey
+  characterKey?: CharacterKey
   data?: UIData
   compareData: boolean
   disabled: boolean
   getLabel: (index: number) => Displayable
   sortBase: string[]
   ascending: boolean
+  optimizationTarget: string[]
 }) {
-  if (ascending) builds = [...builds].reverse()
+  const sortedBuilds = SortBuilds(
+    builds,
+    sortBase,
+    optimizationTarget,
+    ascending,
+    characterKey
+  )
   const deleteBuild = useCallback(
     (index: number) => {
       if (setBuilds) {
-        const builds_ = [...builds]
+        const builds_ = [...sortedBuilds]
         builds_.splice(index, 1)
         setBuilds(builds_)
       }
     },
-    [builds, setBuilds]
+    [sortedBuilds, setBuilds]
   )
   // Memoize the build list because calculating/rendering the build list is actually very expensive, which will cause longer optimization times.
   const list = useMemo(
@@ -890,8 +904,8 @@ function BuildList({
       <Suspense
         fallback={<Skeleton variant="rectangular" width="100%" height={600} />}
       >
-        {builds?.map((build, index) => {
-          index = ascending ? builds.length - 1 - index : index
+        {sortedBuilds?.map((build, index) => {
+          index = ascending ? sortedBuilds.length - 1 - index : index
           return (
             characterKey &&
             data && (
@@ -915,8 +929,9 @@ function BuildList({
         })}
       </Suspense>
     ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      builds,
+      sortedBuilds,
       characterKey,
       data,
       compareData,
@@ -1025,4 +1040,66 @@ function DataContextWrapper({ children, characterKey, build, oldData }: Prop) {
       {children}
     </DataContext.Provider>
   )
+}
+
+function BuildDataWrapper(characterKey: CharacterKey, build: string[]) {
+  const { database } = useContext(DatabaseContext)
+  const {
+    buildSetting: { mainStatAssumptionLevel },
+  } = useBuildSetting(characterKey)
+
+  const buildsArts = build
+    .map((i) => database.arts.get(i))
+    .filter((a) => a) as ICachedArtifact[]
+
+  const teamData = useTeamData(
+    characterKey,
+    mainStatAssumptionLevel,
+    buildsArts
+  )
+  const tdc = teamData?.[characterKey]
+  return tdc.target
+}
+
+function GetSortBaseValue(
+  buildData: UIData,
+  sortBase: string[]
+): number | undefined {
+  const values = getDisplaySections(buildData).filter(([, ns]) =>
+    Object.values(ns).some((n) => !n.isEmpty)
+  )
+
+  for (const [sectionKey, displayNs] of values) {
+    for (const [nodeKey, n] of Object.entries(displayNs)) {
+      if (JSON.stringify(sortBase) === JSON.stringify([sectionKey, nodeKey])) {
+        return n.value
+      }
+    }
+  }
+
+  return undefined
+}
+
+function SortBuilds(
+  builds: string[][],
+  sortBase: string[],
+  optimizationTarget: string[],
+  ascending: boolean,
+  characterKey?: CharacterKey
+): string[][] {
+  const sortedBuildsWithValues = builds?.map((build) => {
+    const buildData = BuildDataWrapper(characterKey, build)
+    const sortBaseValue = GetSortBaseValue(buildData, sortBase)
+    return { build, sortBaseValue }
+  })
+
+  sortedBuildsWithValues.sort((a, b) => {
+    const valueA = a.sortBaseValue || 0
+    const valueB = b.sortBaseValue || 0
+    return ascending ? valueA - valueB : valueB - valueA
+  })
+
+  const sortedBuilds = sortedBuildsWithValues.map((item) => item.build)
+
+  return sortedBuilds
 }
