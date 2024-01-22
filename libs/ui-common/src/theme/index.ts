@@ -90,8 +90,8 @@ export const theme = createTheme({
       name: 'error',
     }),
     background: {
-      default: '#0C1020',
-      paper: '#0C1020',
+      default: '#181818',
+      paper: '#181818',
     },
     info: defaultTheme.palette.augmentColor({
       color: { main: '#523793' },
