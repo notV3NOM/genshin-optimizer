@@ -75,6 +75,8 @@ export interface BuildSetting {
   compareBuild: boolean
   levelLow: number
   levelHigh: number
+  sortBase?: string[]
+  sortAsc?: boolean
 }
 
 export class BuildSettingDataManager extends DataManager<
@@ -115,6 +117,8 @@ export class BuildSettingDataManager extends DataManager<
       compareBuild,
       levelLow,
       levelHigh,
+      sortBase,
+      sortAsc,
     } = obj as BuildSetting
 
     if (typeof statFilters !== 'object') statFilters = {}
@@ -166,6 +170,8 @@ export class BuildSettingDataManager extends DataManager<
     )
       maxBuildsToShow = maxBuildsToShowDefault
     if (!plotBase || !Array.isArray(plotBase)) plotBase = undefined
+    if (!sortBase || !Array.isArray(sortBase)) sortBase = undefined
+    if (sortAsc === undefined) sortAsc = false
     if (compareBuild === undefined) compareBuild = false
     if (levelLow === undefined) levelLow = 0
     if (levelHigh === undefined) levelHigh = 20
@@ -193,6 +199,8 @@ export class BuildSettingDataManager extends DataManager<
       compareBuild,
       levelLow,
       levelHigh,
+      sortBase,
+      sortAsc,
     }
   }
   override get(key: CharacterKey) {
@@ -220,6 +228,8 @@ const initialBuildSettings: BuildSetting = deepFreeze({
   compareBuild: true,
   levelLow: 0,
   levelHigh: 20,
+  sortBase: undefined,
+  sortAsc: false,
 })
 
 export function handleArtSetExclusion(

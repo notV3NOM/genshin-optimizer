@@ -5,23 +5,17 @@ import BootstrapTooltip from '../../../../../../Components/BootstrapTooltip'
 import CardLight from '../../../../../../Components/Card/CardLight'
 import SortIcon from '@mui/icons-material/Sort'
 import OptimizationTargetSelector from '../OptimizationTargetSelector'
+import { useContext } from 'react'
+import { CharacterContext } from '../../../../../../Context/CharacterContext'
+import useBuildSetting from '../../useBuildSetting'
 
-type SortCardProps = {
-  sortBase?: string[]
-  setSortBase: (path: string[] | undefined) => void
-  ascending: boolean
-  setAscending: (ascending: boolean) => void
-  optimizationTarget?: string[]
-}
-
-export default function SortCard({
-  sortBase,
-  setSortBase,
-  ascending,
-  setAscending,
-  optimizationTarget,
-}: SortCardProps) {
+export default function SortCard() {
   const { t } = useTranslation(['page_character_optimize', 'ui'])
+  const {
+    character: { key: characterKey },
+  } = useContext(CharacterContext)
+  const { buildSetting, buildSettingDispatch } = useBuildSetting(characterKey)
+  const { optimizationTarget, sortBase, sortAsc } = buildSetting
 
   return (
     <CardLight>
@@ -34,7 +28,9 @@ export default function SortCard({
             <span>
               <OptimizationTargetSelector
                 optimizationTarget={sortBase}
-                setTarget={(target) => setSortBase(target)}
+                setTarget={(target) => {
+                  buildSettingDispatch({ sortBase: target })
+                }}
                 defaultText={'Select a Sort Target'}
                 disabled={false}
               />
@@ -42,14 +38,18 @@ export default function SortCard({
           </Grid>
           <Grid item>
             <Button
-              onClick={() => setAscending(!ascending)}
+              onClick={() => {
+                buildSettingDispatch({ sortAsc: !sortAsc })
+              }}
               startIcon={
                 <SortIcon
-                  sx={{ transform: ascending ? 'scale(1, -1)' : 'scale(1)' }}
+                  sx={{
+                    transform: sortAsc ? 'scale(1, -1)' : 'scale(1)',
+                  }}
                 />
               }
             >
-              {ascending ? t('ui:Ascending') : t('ui:Descending')}
+              {sortAsc ? t('ui:Ascending') : t('ui:Descending')}
             </Button>
           </Grid>
           <Grid item>
@@ -61,8 +61,11 @@ export default function SortCard({
                 <Button
                   color="error"
                   onClick={() => {
-                    setSortBase(optimizationTarget)
-                    setAscending(false)
+                    localStorage.removeItem('sortValues')
+                    buildSettingDispatch({
+                      sortBase: optimizationTarget,
+                      sortAsc: false,
+                    })
                   }}
                   disabled={false}
                 >

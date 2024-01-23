@@ -155,11 +155,15 @@ export default function TabBuild() {
     maxBuildsToShow,
     levelLow,
     levelHigh,
+    sortBase,
+    sortAsc,
   } = buildSetting
+
   const {
     buildResult: { builds, buildDate },
     buildResultDispatch,
   } = useBuildResult(characterKey)
+
   const teamData = useTeamData(characterKey, mainStatAssumptionLevel)
   const { characterSheet, target: data } =
     teamData?.[characterKey as CharacterKey] ?? {}
@@ -172,9 +176,6 @@ export default function TabBuild() {
     () => database.arts.followAny(setArtsDirty),
     [setArtsDirty, database]
   )
-
-  const [sortBase, setSortBase] = useState<string[]>(optimizationTarget)
-  const [ascending, setAscending] = useState<boolean>(false)
 
   const deferredArtsDirty = useDeferredValue(artsDirty)
   const deferredBuildSetting = useDeferredValue(buildSetting)
@@ -298,7 +299,8 @@ export default function TabBuild() {
     } = buildSetting
     if (!characterKey || !optimizationTarget) return
 
-    setSortBase(optimizationTarget)
+    buildSettingDispatch({ sortBase: optimizationTarget, sortAsc: false })
+
     const split = compactArtifacts(
       filteredArts,
       mainStatAssumptionLevel,
@@ -463,6 +465,7 @@ export default function TabBuild() {
   }, [
     buildSetting,
     characterKey,
+    buildSettingDispatch,
     filteredArts,
     database,
     gender,
@@ -751,13 +754,7 @@ export default function TabBuild() {
             />
           </Box>
           <Box>
-            <SortCard
-              sortBase={sortBase}
-              setSortBase={setSortBase}
-              ascending={ascending}
-              setAscending={setAscending}
-              optimizationTarget={optimizationTarget}
-            />
+            <SortCard />
           </Box>
           <CardLight>
             <CardContent>
@@ -789,6 +786,10 @@ export default function TabBuild() {
                   onClick={() => {
                     setGraphBuilds(undefined)
                     buildResultDispatch({ builds: [], buildDate: 0 })
+                    buildSettingDispatch({
+                      sortBase: optimizationTarget,
+                      sortAsc: false,
+                    })
                   }}
                 >
                   Clear Builds
@@ -831,8 +832,6 @@ export default function TabBuild() {
                 disabled={!!generatingBuilds}
                 getLabel={getGraphBuildLabel}
                 setBuilds={setGraphBuilds}
-                sortBase={sortBase}
-                ascending={ascending}
               />
             )}
             <BuildList
@@ -842,8 +841,7 @@ export default function TabBuild() {
               compareData={compareData}
               disabled={!!generatingBuilds}
               getLabel={getNormBuildLabel}
-              sortBase={sortBase}
-              ascending={ascending}
+              sortOptions={{ sortBase: sortBase, ascending: sortAsc }}
             />
           </OptimizationTargetContext.Provider>
         </DataContext.Provider>
@@ -860,20 +858,17 @@ function BuildList({
   compareData,
   disabled,
   getLabel,
-  sortBase,
-  ascending,
+  sortOptions,
 }: {
   builds: string[][]
   setBuilds?: (builds: string[][] | undefined) => void
-  characterKey?: '' | CharacterKey
+  characterKey?: CharacterKey
   data?: UIData
   compareData: boolean
   disabled: boolean
   getLabel: (index: number) => Displayable
-  sortBase: string[]
-  ascending: boolean
+  sortOptions?: { sortBase: string[]; ascending: boolean }
 }) {
-  if (ascending) builds = [...builds].reverse()
   const deleteBuild = useCallback(
     (index: number) => {
       if (setBuilds) {
@@ -891,7 +886,6 @@ function BuildList({
         fallback={<Skeleton variant="rectangular" width="100%" height={600} />}
       >
         {builds?.map((build, index) => {
-          index = ascending ? builds.length - 1 - index : index
           return (
             characterKey &&
             data && (
@@ -908,6 +902,7 @@ function BuildList({
                   compareData={compareData}
                   disabled={disabled}
                   deleteBuild={setBuilds ? deleteBuild : undefined}
+                  sortOptions={sortOptions}
                 />
               </DataContextWrapper>
             )
@@ -919,15 +914,19 @@ function BuildList({
       builds,
       characterKey,
       data,
+      getLabel,
       compareData,
       disabled,
-      getLabel,
-      deleteBuild,
       setBuilds,
-      ascending,
+      deleteBuild,
+      sortOptions,
     ]
   )
-  return list
+  const sortedList = useMemo(
+    () => SortList(list, sortOptions),
+    [list, sortOptions]
+  )
+  return sortedList
 }
 function BuildItemWrapper({
   index,
@@ -936,6 +935,7 @@ function BuildItemWrapper({
   compareData,
   disabled,
   deleteBuild,
+  sortOptions,
 }: {
   index: number
   label: Displayable
@@ -943,6 +943,7 @@ function BuildItemWrapper({
   compareData: boolean
   disabled: boolean
   deleteBuild?: (index: number) => void
+  sortOptions?: { sortBase: string[]; ascending: boolean }
 }) {
   const { t } = useTranslation('page_character_optimize')
   const location = useLocation()
@@ -980,6 +981,8 @@ function BuildItemWrapper({
           )}
         </>
       }
+      index={index}
+      sortOptions={sortOptions}
     />
   )
 }
@@ -1025,4 +1028,24 @@ function DataContextWrapper({ children, characterKey, build, oldData }: Prop) {
       {children}
     </DataContext.Provider>
   )
+}
+
+function SortList(
+  list: React.JSX.Element,
+  sortOptions: { sortBase: string[]; ascending: boolean }
+) {
+  const sortValues = JSON.parse(localStorage.getItem('sortValues') || '{}')
+
+  const sortedBuildsWithValues = {}
+  list.props.children.map((child: JSX.Element, index: number) => {
+    sortedBuildsWithValues[child.key] = sortValues[index.toString()]
+  })
+
+  list.props.children.sort((a, b) => {
+    const valueA = sortedBuildsWithValues[a.key] || 0
+    const valueB = sortedBuildsWithValues[b.key] || 0
+    return sortOptions.ascending ? valueA - valueB : valueB - valueA
+  })
+
+  return list
 }
