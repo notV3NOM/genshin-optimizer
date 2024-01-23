@@ -7,18 +7,14 @@ import SortIcon from '@mui/icons-material/Sort'
 import OptimizationTargetSelector from '../OptimizationTargetSelector'
 
 type SortCardProps = {
-  sortBase?: string[]
-  setSortBase: (path: string[] | undefined) => void
-  ascending: boolean
-  setAscending: (ascending: boolean) => void
+  sortOptions: { sortBase: string[]; ascending: boolean }
+  setSortOptions: (options: { sortBase: string[]; ascending: boolean }) => void
   optimizationTarget?: string[]
 }
 
 export default function SortCard({
-  sortBase,
-  setSortBase,
-  ascending,
-  setAscending,
+  sortOptions,
+  setSortOptions,
   optimizationTarget,
 }: SortCardProps) {
   const { t } = useTranslation(['page_character_optimize', 'ui'])
@@ -33,8 +29,10 @@ export default function SortCard({
           <Grid item>
             <span>
               <OptimizationTargetSelector
-                optimizationTarget={sortBase}
-                setTarget={(target) => setSortBase(target)}
+                optimizationTarget={sortOptions.sortBase}
+                setTarget={(target) =>
+                  setSortOptions({ ...sortOptions, sortBase: target })
+                }
                 defaultText={'Select a Sort Target'}
                 disabled={false}
               />
@@ -42,27 +40,38 @@ export default function SortCard({
           </Grid>
           <Grid item>
             <Button
-              onClick={() => setAscending(!ascending)}
+              onClick={() =>
+                setSortOptions({
+                  ...sortOptions,
+                  ascending: !sortOptions.ascending,
+                })
+              }
               startIcon={
                 <SortIcon
-                  sx={{ transform: ascending ? 'scale(1, -1)' : 'scale(1)' }}
+                  sx={{
+                    transform: sortOptions.ascending
+                      ? 'scale(1, -1)'
+                      : 'scale(1)',
+                  }}
                 />
               }
             >
-              {ascending ? t('ui:Ascending') : t('ui:Descending')}
+              {sortOptions.ascending ? t('ui:Ascending') : t('ui:Descending')}
             </Button>
           </Grid>
           <Grid item>
             <BootstrapTooltip
-              title={!sortBase ? '' : t('ui:reset')}
+              title={!sortOptions.sortBase ? '' : t('ui:reset')}
               placement="top"
             >
               <span>
                 <Button
                   color="error"
                   onClick={() => {
-                    setSortBase(optimizationTarget)
-                    setAscending(false)
+                    setSortOptions({
+                      sortBase: optimizationTarget,
+                      ascending: false,
+                    })
                   }}
                   disabled={false}
                 >
