@@ -888,7 +888,7 @@ function BuildList({
         fallback={<Skeleton variant="rectangular" width="100%" height={600} />}
       >
         {builds?.map((build, index) => {
-          index = sortOptions.ascending ? builds.length - 1 - index : index
+          index = sortOptions?.ascending ? builds.length - 1 - index : index
           return (
             characterKey &&
             data && (
