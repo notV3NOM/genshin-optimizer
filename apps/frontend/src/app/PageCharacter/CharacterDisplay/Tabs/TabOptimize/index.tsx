@@ -155,11 +155,15 @@ export default function TabBuild() {
     maxBuildsToShow,
     levelLow,
     levelHigh,
+    sortBase,
+    sortAsc,
   } = buildSetting
+
   const {
     buildResult: { builds, buildDate },
     buildResultDispatch,
   } = useBuildResult(characterKey)
+
   const teamData = useTeamData(characterKey, mainStatAssumptionLevel)
   const { characterSheet, target: data } =
     teamData?.[characterKey as CharacterKey] ?? {}
@@ -172,11 +176,6 @@ export default function TabBuild() {
     () => database.arts.followAny(setArtsDirty),
     [setArtsDirty, database]
   )
-
-  const [sortOptions, setSortOptions] = useState({
-    sortBase: optimizationTarget,
-    ascending: false,
-  })
 
   const deferredArtsDirty = useDeferredValue(artsDirty)
   const deferredBuildSetting = useDeferredValue(buildSetting)
@@ -752,11 +751,7 @@ export default function TabBuild() {
             />
           </Box>
           <Box>
-            <SortCard
-              sortOptions={sortOptions}
-              setSortOptions={setSortOptions}
-              optimizationTarget={optimizationTarget}
-            />
+            <SortCard />
           </Box>
           <CardLight>
             <CardContent>
@@ -788,10 +783,10 @@ export default function TabBuild() {
                   onClick={() => {
                     setGraphBuilds(undefined)
                     buildResultDispatch({ builds: [], buildDate: 0 })
-                    setSortOptions((_) => ({
+                    buildSettingDispatch({
                       sortBase: optimizationTarget,
-                      ascending: false,
-                    }))
+                      sortAsc: false,
+                    })
                   }}
                 >
                   Clear Builds
@@ -843,7 +838,7 @@ export default function TabBuild() {
               compareData={compareData}
               disabled={!!generatingBuilds}
               getLabel={getNormBuildLabel}
-              sortOptions={sortOptions}
+              sortOptions={{ sortBase: sortBase, ascending: sortAsc }}
             />
           </OptimizationTargetContext.Provider>
         </DataContext.Provider>
@@ -888,7 +883,6 @@ function BuildList({
         fallback={<Skeleton variant="rectangular" width="100%" height={600} />}
       >
         {builds?.map((build, index) => {
-          index = sortOptions?.ascending ? builds.length - 1 - index : index
           return (
             characterKey &&
             data && (

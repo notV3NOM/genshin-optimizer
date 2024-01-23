@@ -5,24 +5,17 @@ import BootstrapTooltip from '../../../../../../Components/BootstrapTooltip'
 import CardLight from '../../../../../../Components/Card/CardLight'
 import SortIcon from '@mui/icons-material/Sort'
 import OptimizationTargetSelector from '../OptimizationTargetSelector'
+import { useContext } from 'react'
+import { CharacterContext } from '../../../../../../Context/CharacterContext'
+import useBuildSetting from '../../useBuildSetting'
 
-type SortCardProps = {
-  sortOptions: { sortBase: string[]; ascending: boolean }
-  setSortOptions: (
-    prevOptions: (prev: { sortBase: string[]; ascending: boolean }) => {
-      sortBase: string[]
-      ascending: boolean
-    }
-  ) => void
-  optimizationTarget?: string[]
-}
-
-export default function SortCard({
-  sortOptions,
-  setSortOptions,
-  optimizationTarget,
-}: SortCardProps) {
+export default function SortCard() {
   const { t } = useTranslation(['page_character_optimize', 'ui'])
+  const {
+    character: { key: characterKey },
+  } = useContext(CharacterContext)
+  const { buildSetting, buildSettingDispatch } = useBuildSetting(characterKey)
+  const { optimizationTarget, sortBase, sortAsc } = buildSetting
 
   return (
     <CardLight>
@@ -34,12 +27,9 @@ export default function SortCard({
           <Grid item>
             <span>
               <OptimizationTargetSelector
-                optimizationTarget={sortOptions.sortBase}
+                optimizationTarget={sortBase}
                 setTarget={(target) => {
-                  setSortOptions((prevOptions) => ({
-                    ...prevOptions,
-                    sortBase: target,
-                  }))
+                  buildSettingDispatch({ sortBase: target })
                 }}
                 defaultText={'Select a Sort Target'}
                 disabled={false}
@@ -49,27 +39,22 @@ export default function SortCard({
           <Grid item>
             <Button
               onClick={() => {
-                setSortOptions((prevOptions) => ({
-                  ...prevOptions,
-                  ascending: !prevOptions.ascending,
-                }))
+                buildSettingDispatch({ sortAsc: !sortAsc })
               }}
               startIcon={
                 <SortIcon
                   sx={{
-                    transform: sortOptions.ascending
-                      ? 'scale(1, -1)'
-                      : 'scale(1)',
+                    transform: sortAsc ? 'scale(1, -1)' : 'scale(1)',
                   }}
                 />
               }
             >
-              {sortOptions.ascending ? t('ui:Ascending') : t('ui:Descending')}
+              {sortAsc ? t('ui:Ascending') : t('ui:Descending')}
             </Button>
           </Grid>
           <Grid item>
             <BootstrapTooltip
-              title={!sortOptions.sortBase ? '' : t('ui:reset')}
+              title={!sortBase ? '' : t('ui:reset')}
               placement="top"
             >
               <span>
@@ -77,11 +62,10 @@ export default function SortCard({
                   color="error"
                   onClick={() => {
                     localStorage.removeItem('sortValues')
-                    setSortOptions((prevOptions) => ({
-                      ...prevOptions,
+                    buildSettingDispatch({
                       sortBase: optimizationTarget,
-                      ascending: false,
-                    }))
+                      sortAsc: false,
+                    })
                   }}
                   disabled={false}
                 >
