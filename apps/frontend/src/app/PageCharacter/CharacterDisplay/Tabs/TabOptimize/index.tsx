@@ -178,7 +178,7 @@ export default function TabBuild() {
     sortBase: optimizationTarget,
     ascending: false,
   })
-  // const sortedBuilds = useSortedBuilds(sortOptions)
+  const sortedBuilds = useSortedBuilds(sortOptions)
 
   const deferredArtsDirty = useDeferredValue(artsDirty)
   const deferredBuildSetting = useDeferredValue(buildSetting)
@@ -841,7 +841,7 @@ export default function TabBuild() {
               />
             )}
             <BuildList
-              builds={builds}
+              builds={sortedBuilds}
               characterKey={characterKey}
               data={data}
               compareData={compareData}

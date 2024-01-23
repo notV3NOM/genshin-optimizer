@@ -62,8 +62,6 @@ export default function useSortedBuilds(sortOptions: {
     buildResult: { builds },
   } = useBuildResult(characterKey)
 
-  const [sortedBuilds, setSortedBuilds] = useState(builds)
-
   const sortedBuildsWithValues = builds?.map((build) => {
     const buildData = BuildDataWrapper(
       characterKey,
@@ -81,7 +79,5 @@ export default function useSortedBuilds(sortOptions: {
     return sortOptions.ascending ? valueA - valueB : valueB - valueA
   })
 
-  setSortedBuilds(sortedBuildsWithValues.map((item) => item.build))
-
-  return sortedBuilds
+  return sortedBuildsWithValues.map((item) => item.build)
 }
