@@ -465,6 +465,7 @@ export default function TabBuild() {
   }, [
     buildSetting,
     characterKey,
+    buildSettingDispatch,
     filteredArts,
     database,
     gender,
