@@ -8,7 +8,12 @@ import OptimizationTargetSelector from '../OptimizationTargetSelector'
 
 type SortCardProps = {
   sortOptions: { sortBase: string[]; ascending: boolean }
-  setSortOptions: (options: { sortBase: string[]; ascending: boolean }) => void
+  setSortOptions: (
+    prevOptions: (prev: { sortBase: string[]; ascending: boolean }) => {
+      sortBase: string[]
+      ascending: boolean
+    }
+  ) => void
   optimizationTarget?: string[]
 }
 
@@ -31,8 +36,10 @@ export default function SortCard({
               <OptimizationTargetSelector
                 optimizationTarget={sortOptions.sortBase}
                 setTarget={(target) => {
-                  localStorage.removeItem('sortValues')
-                  setSortOptions({ ...sortOptions, sortBase: target })
+                  setSortOptions((prevOptions) => ({
+                    ...prevOptions,
+                    sortBase: target,
+                  }))
                 }}
                 defaultText={'Select a Sort Target'}
                 disabled={false}
@@ -42,10 +49,10 @@ export default function SortCard({
           <Grid item>
             <Button
               onClick={() => {
-                setSortOptions({
-                  ...sortOptions,
-                  ascending: !sortOptions.ascending,
-                })
+                setSortOptions((prevOptions) => ({
+                  ...prevOptions,
+                  ascending: !prevOptions.ascending,
+                }))
               }}
               startIcon={
                 <SortIcon
@@ -70,10 +77,11 @@ export default function SortCard({
                   color="error"
                   onClick={() => {
                     localStorage.removeItem('sortValues')
-                    setSortOptions({
+                    setSortOptions((prevOptions) => ({
+                      ...prevOptions,
                       sortBase: optimizationTarget,
                       ascending: false,
-                    })
+                    }))
                   }}
                   disabled={false}
                 >

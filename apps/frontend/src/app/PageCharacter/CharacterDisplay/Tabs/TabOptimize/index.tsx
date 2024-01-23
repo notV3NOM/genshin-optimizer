@@ -300,10 +300,6 @@ export default function TabBuild() {
     } = buildSetting
     if (!characterKey || !optimizationTarget) return
 
-    setSortOptions({
-      sortBase: optimizationTarget,
-      ascending: false,
-    })
     const split = compactArtifacts(
       filteredArts,
       mainStatAssumptionLevel,
@@ -792,10 +788,10 @@ export default function TabBuild() {
                   onClick={() => {
                     setGraphBuilds(undefined)
                     buildResultDispatch({ builds: [], buildDate: 0 })
-                    setSortOptions({
+                    setSortOptions((_) => ({
                       sortBase: optimizationTarget,
                       ascending: false,
-                    })
+                    }))
                   }}
                 >
                   Clear Builds
@@ -1041,16 +1037,12 @@ function SortList(
   list: React.JSX.Element,
   sortOptions: { sortBase: string[]; ascending: boolean }
 ) {
-  // console.log(sortOptions)
   const sortValues = JSON.parse(localStorage.getItem('sortValues') || '{}')
-  // console.log(sortValues)
 
   const sortedBuildsWithValues = {}
   list.props.children.map((child: JSX.Element, index: number) => {
     sortedBuildsWithValues[child.key] = sortValues[index.toString()]
   })
-
-  // console.log(sortedBuildsWithValues)
 
   list.props.children.sort((a, b) => {
     const valueA = sortedBuildsWithValues[a.key] || 0
