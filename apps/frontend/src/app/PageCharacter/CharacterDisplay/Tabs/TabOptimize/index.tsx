@@ -837,7 +837,6 @@ export default function TabBuild() {
                 disabled={!!generatingBuilds}
                 getLabel={getGraphBuildLabel}
                 setBuilds={setGraphBuilds}
-                ascending={sortOptions.ascending}
               />
             )}
             <BuildList
@@ -873,7 +872,7 @@ function BuildList({
   compareData: boolean
   disabled: boolean
   getLabel: (index: number) => Displayable
-  ascending: boolean
+  ascending?: boolean
 }) {
   const deleteBuild = useCallback(
     (index: number) => {
