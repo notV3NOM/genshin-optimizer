@@ -299,6 +299,8 @@ export default function TabBuild() {
     } = buildSetting
     if (!characterKey || !optimizationTarget) return
 
+    buildSettingDispatch({ sortBase: optimizationTarget, sortAsc: false })
+
     const split = compactArtifacts(
       filteredArts,
       mainStatAssumptionLevel,
