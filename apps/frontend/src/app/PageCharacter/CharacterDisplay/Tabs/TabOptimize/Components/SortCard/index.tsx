@@ -30,9 +30,10 @@ export default function SortCard({
             <span>
               <OptimizationTargetSelector
                 optimizationTarget={sortOptions.sortBase}
-                setTarget={(target) =>
+                setTarget={(target) => {
+                  localStorage.removeItem('sortValues')
                   setSortOptions({ ...sortOptions, sortBase: target })
-                }
+                }}
                 defaultText={'Select a Sort Target'}
                 disabled={false}
               />
@@ -40,12 +41,12 @@ export default function SortCard({
           </Grid>
           <Grid item>
             <Button
-              onClick={() =>
+              onClick={() => {
                 setSortOptions({
                   ...sortOptions,
                   ascending: !sortOptions.ascending,
                 })
-              }
+              }}
               startIcon={
                 <SortIcon
                   sx={{
@@ -68,6 +69,7 @@ export default function SortCard({
                 <Button
                   color="error"
                   onClick={() => {
+                    localStorage.removeItem('sortValues')
                     setSortOptions({
                       sortBase: optimizationTarget,
                       ascending: false,

@@ -15,7 +15,13 @@ import { FieldDisplayList, NodeFieldDisplay } from '../FieldDisplay'
 import ImgIcon from '../Image/ImgIcon'
 import SqBadge from '../SqBadge'
 
-export default function StatDisplayComponent() {
+export default function StatDisplayComponent({
+  index,
+  sortOptions,
+}: {
+  index?: number
+  sortOptions?: { sortBase: string[]; ascending: boolean }
+}) {
   const { data } = useContext(DataContext)
   const sections = useMemo(
     () =>
@@ -24,6 +30,20 @@ export default function StatDisplayComponent() {
       ),
     [data]
   )
+  if (sortOptions) {
+    const sortValues = JSON.parse(localStorage.getItem('sortValues') || '{}')
+    for (const [sectionKey, displayNs] of sections) {
+      for (const [nodeKey, n] of Object.entries(displayNs)) {
+        if (
+          JSON.stringify(sortOptions.sortBase) ===
+          JSON.stringify([sectionKey, nodeKey])
+        ) {
+          sortValues[index.toString()] = n.value
+          localStorage.setItem('sortValues', JSON.stringify(sortValues))
+        }
+      }
+    }
+  }
   return (
     <Box sx={{ mr: -1, mb: -1 }}>
       <Masonry columns={{ xs: 1, sm: 2, md: 3, xl: 4 }} spacing={1}>

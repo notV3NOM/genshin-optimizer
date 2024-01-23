@@ -88,7 +88,6 @@ import { compactArtifacts, dynamicData } from './foreground'
 import useBuildResult from './useBuildResult'
 import useBuildSetting from './useBuildSetting'
 import SortCard from './Components/SortCard'
-import useSortedBuilds from './useSortedBuilds'
 
 const audio = new Audio('notification.mp3')
 export default function TabBuild() {
@@ -178,7 +177,6 @@ export default function TabBuild() {
     sortBase: optimizationTarget,
     ascending: false,
   })
-  const sortedBuilds = useSortedBuilds(sortOptions)
 
   const deferredArtsDirty = useDeferredValue(artsDirty)
   const deferredBuildSetting = useDeferredValue(buildSetting)
@@ -302,7 +300,10 @@ export default function TabBuild() {
     } = buildSetting
     if (!characterKey || !optimizationTarget) return
 
-    setSortOptions({ sortBase: optimizationTarget, ascending: false })
+    setSortOptions({
+      sortBase: optimizationTarget,
+      ascending: false,
+    })
     const split = compactArtifacts(
       filteredArts,
       mainStatAssumptionLevel,
@@ -840,13 +841,13 @@ export default function TabBuild() {
               />
             )}
             <BuildList
-              builds={sortedBuilds}
+              builds={builds}
               characterKey={characterKey}
               data={data}
               compareData={compareData}
               disabled={!!generatingBuilds}
               getLabel={getNormBuildLabel}
-              ascending={sortOptions.ascending}
+              sortOptions={sortOptions}
             />
           </OptimizationTargetContext.Provider>
         </DataContext.Provider>
@@ -863,7 +864,7 @@ function BuildList({
   compareData,
   disabled,
   getLabel,
-  ascending,
+  sortOptions,
 }: {
   builds: string[][]
   setBuilds?: (builds: string[][] | undefined) => void
@@ -872,7 +873,7 @@ function BuildList({
   compareData: boolean
   disabled: boolean
   getLabel: (index: number) => Displayable
-  ascending?: boolean
+  sortOptions?: { sortBase: string[]; ascending: boolean }
 }) {
   const deleteBuild = useCallback(
     (index: number) => {
@@ -891,7 +892,7 @@ function BuildList({
         fallback={<Skeleton variant="rectangular" width="100%" height={600} />}
       >
         {builds?.map((build, index) => {
-          index = ascending ? builds.length - 1 - index : index
+          index = sortOptions.ascending ? builds.length - 1 - index : index
           return (
             characterKey &&
             data && (
@@ -908,6 +909,7 @@ function BuildList({
                   compareData={compareData}
                   disabled={disabled}
                   deleteBuild={setBuilds ? deleteBuild : undefined}
+                  sortOptions={sortOptions}
                 />
               </DataContextWrapper>
             )
@@ -919,15 +921,19 @@ function BuildList({
       builds,
       characterKey,
       data,
+      getLabel,
       compareData,
       disabled,
-      getLabel,
-      deleteBuild,
       setBuilds,
-      ascending,
+      deleteBuild,
+      sortOptions,
     ]
   )
-  return list
+  const sortedList = useMemo(
+    () => SortList(list, sortOptions),
+    [list, sortOptions]
+  )
+  return sortedList
 }
 function BuildItemWrapper({
   index,
@@ -936,6 +942,7 @@ function BuildItemWrapper({
   compareData,
   disabled,
   deleteBuild,
+  sortOptions,
 }: {
   index: number
   label: Displayable
@@ -943,6 +950,7 @@ function BuildItemWrapper({
   compareData: boolean
   disabled: boolean
   deleteBuild?: (index: number) => void
+  sortOptions?: { sortBase: string[]; ascending: boolean }
 }) {
   const { t } = useTranslation('page_character_optimize')
   const location = useLocation()
@@ -980,6 +988,8 @@ function BuildItemWrapper({
           )}
         </>
       }
+      index={index}
+      sortOptions={sortOptions}
     />
   )
 }
@@ -1025,4 +1035,28 @@ function DataContextWrapper({ children, characterKey, build, oldData }: Prop) {
       {children}
     </DataContext.Provider>
   )
+}
+
+function SortList(
+  list: React.JSX.Element,
+  sortOptions: { sortBase: string[]; ascending: boolean }
+) {
+  // console.log(sortOptions)
+  const sortValues = JSON.parse(localStorage.getItem('sortValues') || '{}')
+  // console.log(sortValues)
+
+  const sortedBuildsWithValues = {}
+  list.props.children.map((child: JSX.Element, index: number) => {
+    sortedBuildsWithValues[child.key] = sortValues[index.toString()]
+  })
+
+  // console.log(sortedBuildsWithValues)
+
+  list.props.children.sort((a, b) => {
+    const valueA = sortedBuildsWithValues[a.key] || 0
+    const valueB = sortedBuildsWithValues[b.key] || 0
+    return sortOptions.ascending ? valueA - valueB : valueB - valueA
+  })
+
+  return list
 }

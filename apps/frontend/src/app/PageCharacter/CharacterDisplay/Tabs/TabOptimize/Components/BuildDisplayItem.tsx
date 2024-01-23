@@ -56,6 +56,8 @@ type BuildDisplayItemProps = {
   disabled?: boolean
   extraButtonsRight?: JSX.Element
   extraButtonsLeft?: JSX.Element
+  index?: number
+  sortOptions?: { sortBase: string[]; ascending: boolean }
 }
 //for displaying each artifact build
 export default function BuildDisplayItem({
@@ -64,6 +66,8 @@ export default function BuildDisplayItem({
   extraButtonsRight,
   extraButtonsLeft,
   disabled,
+  index,
+  sortOptions,
 }: BuildDisplayItemProps) {
   const {
     character: { key: characterKey, equippedArtifacts },
@@ -213,7 +217,7 @@ export default function BuildDisplayItem({
             {artNanos}
           </Grid>
           <DataContext.Provider value={statProviderContext}>
-            <StatDisplayComponent />
+            <StatDisplayComponent index={index} sortOptions={sortOptions} />
           </DataContext.Provider>
         </CardContent>
       </Suspense>
