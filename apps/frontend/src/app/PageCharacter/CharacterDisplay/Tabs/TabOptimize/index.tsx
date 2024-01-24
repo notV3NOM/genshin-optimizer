@@ -530,21 +530,11 @@ export default function TabBuild() {
                 <CharacterCard
                   characterKey={characterKey}
                   onClickTeammate={onClickTeammate}
+                  hideStats={true}
+                  hideArtifacts={true}
                 />
               </Box>
               <BonusStatsCard />
-            </Grid>
-
-            {/* 2 */}
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              lg={4}
-              display="flex"
-              flexDirection="column"
-              gap={1}
-            >
               {/* Level Filter */}
               <CardLight>
                 <CardContent sx={{ display: 'flex', gap: 1 }}>
@@ -567,7 +557,37 @@ export default function TabBuild() {
                   />
                 </CardContent>
               </CardLight>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <AssumeFullLevelToggle
+                    mainStatAssumptionLevel={mainStatAssumptionLevel}
+                    setmainStatAssumptionLevel={(
+                      mainStatAssumptionLevel: number
+                    ) => buildSettingDispatch({ mainStatAssumptionLevel })}
+                    disabled={generatingBuilds}
+                  />
+                  <InfoTooltip
+                    title={
+                      <Box>
+                        <Typography variant="h6">{t`mainStat.levelAssTooltip.title`}</Typography>
+                        <Typography>{t`mainStat.levelAssTooltip.desc`}</Typography>
+                      </Box>
+                    }
+                  />
+                </Box>
+              </CardContent>
+            </Grid>
 
+            {/* 2 */}
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              lg={4}
+              display="flex"
+              flexDirection="column"
+              gap={1}
+            >
               {/* Main Stat Filters */}
               <CardLight>
                 <CardContent>
@@ -576,25 +596,6 @@ export default function TabBuild() {
                   >{t`mainStat.title`}</Typography>
                 </CardContent>
                 <Divider />
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <AssumeFullLevelToggle
-                      mainStatAssumptionLevel={mainStatAssumptionLevel}
-                      setmainStatAssumptionLevel={(
-                        mainStatAssumptionLevel: number
-                      ) => buildSettingDispatch({ mainStatAssumptionLevel })}
-                      disabled={generatingBuilds}
-                    />
-                    <InfoTooltip
-                      title={
-                        <Box>
-                          <Typography variant="h6">{t`mainStat.levelAssTooltip.title`}</Typography>
-                          <Typography>{t`mainStat.levelAssTooltip.desc`}</Typography>
-                        </Box>
-                      }
-                    />
-                  </Box>
-                </CardContent>
                 {/* main stat selector */}
                 <MainStatSelectionCard
                   disabled={generatingBuilds}
@@ -645,6 +646,7 @@ export default function TabBuild() {
               <StatFilterCard disabled={generatingBuilds} />
             </Grid>
           </Grid>
+          <br />
           {/* Footer */}
           {isSM && targetSelector}
           <ButtonGroup>
