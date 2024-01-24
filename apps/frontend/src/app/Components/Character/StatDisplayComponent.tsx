@@ -48,7 +48,12 @@ export default function StatDisplayComponent({
     <Box sx={{ mr: -1, mb: -1 }}>
       <Masonry columns={{ xs: 1, sm: 2, md: 3, xl: 4 }} spacing={1}>
         {sections.map(([key, Nodes]) => (
-          <Section key={key} displayNs={Nodes} sectionKey={key} />
+          <Section
+            key={key}
+            displayNs={Nodes}
+            sectionKey={key}
+            sortBase={sortOptions?.sortBase}
+          />
         ))}
       </Masonry>
     </Box>
@@ -58,9 +63,11 @@ export default function StatDisplayComponent({
 function Section({
   displayNs,
   sectionKey,
+  sortBase,
 }: {
   displayNs: DisplaySub<NodeDisplay>
   sectionKey: string
+  sortBase: string[]
 }) {
   const optimizationTarget = useContext(OptimizationTargetContext)
   const { data, oldData } = useContext(DataContext)
@@ -99,6 +106,9 @@ function Section({
             emphasize={
               JSON.stringify(optimizationTarget) ===
               JSON.stringify([sectionKey, nodeKey])
+            }
+            secondaryEmphasize={
+              JSON.stringify(sortBase) === JSON.stringify([sectionKey, nodeKey])
             }
           />
         ))}

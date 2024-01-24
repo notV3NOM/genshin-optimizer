@@ -796,18 +796,16 @@ export default function ArtifactEditor({
               )}
             </Grid>
             <Grid item>
-              {process.env.NODE_ENV === 'development' && (
-                <Button
-                  color="info"
-                  startIcon={<Shuffle />}
-                  onClick={() =>
-                    artifactDispatch({
-                      type: 'overwrite',
-                      artifact: randomizeArtifact(),
-                    })
-                  }
-                >{t`editor.btnRandom`}</Button>
-              )}
+              <Button
+                color="info"
+                startIcon={<Shuffle />}
+                onClick={() =>
+                  artifactDispatch({
+                    type: 'overwrite',
+                    artifact: randomizeArtifact(),
+                  })
+                }
+              >{t`editor.btnRandom`}</Button>
             </Grid>
             {old && oldType !== 'edit' && (
               <Grid item>
