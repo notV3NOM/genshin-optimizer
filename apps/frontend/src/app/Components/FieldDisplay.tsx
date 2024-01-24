@@ -97,11 +97,13 @@ export function NodeFieldDisplay({
   oldValue,
   component,
   emphasize,
+  secondaryEmphasize,
 }: {
   node: NodeDisplay
   oldValue?: number
   component?: React.ElementType
   emphasize?: boolean
+  secondaryEmphasize?: boolean
 }) {
   const { data } = useContext(DataContext)
   const { setFormulaData } = useContext(FormulaDataContext)
@@ -142,7 +144,11 @@ export function NodeFieldDisplay({
         display: 'flex',
         justifyContent: 'space-between',
         gap: 1,
-        boxShadow: emphasize ? '0px 0px 0px 2px red inset' : undefined,
+        boxShadow: emphasize
+          ? '0px 0px 0px 2px red inset'
+          : secondaryEmphasize
+          ? '0px 0px 0px 2px yellow inset'
+          : undefined,
       }}
       component={component}
     >
