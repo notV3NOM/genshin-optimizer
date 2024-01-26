@@ -80,3 +80,19 @@ export function imageDataToCanvas(imageData: ImageData): HTMLCanvasElement {
   canvas.getContext('2d')!.putImageData(imageData, 0, 0)
   return canvas // produces a PNG file
 }
+
+export function convertToBlackAndWhite(
+  inputImageData: ImageData,
+  invert = false,
+  threshold = 128
+): ImageData {
+  const data = inputImageData.data
+
+  for (let i = 0; i < data.length; i += 4) {
+    const luminance = (data[i] + data[i + 1] + data[i + 2]) / 3
+    const color = luminance > threshold !== invert ? 255 : 0
+    data[i] = data[i + 1] = data[i + 2] = color
+  }
+
+  return inputImageData
+}

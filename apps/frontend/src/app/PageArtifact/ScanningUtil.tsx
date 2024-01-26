@@ -3,7 +3,7 @@ import { BorrowManager } from '@genshin-optimizer/util'
 import type { RecognizeResult, Scheduler } from 'tesseract.js'
 import { createScheduler, createWorker } from 'tesseract.js'
 
-const workerCount = 2
+const workerCount = 20
 
 const schedulers = new BorrowManager(
   async (language): Promise<Scheduler> => {
@@ -32,7 +32,7 @@ export async function textsFromImage(
 ): Promise<string[]> {
   const canvas = imageDataToCanvas(imageData)
   const rec = await schedulers.borrow(
-    'genshin_fast_09_04_21',
+    'eng',
     async (scheduler) =>
       (await (
         await scheduler
