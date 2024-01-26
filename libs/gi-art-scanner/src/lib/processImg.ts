@@ -52,7 +52,7 @@ export async function processEntry(
     imageData: ImageData,
     options?: object | undefined
   ) => Promise<string[]>,
-  debug = false
+  debug = true
 ): Promise<Processed> {
   const { f, fName } = entry
   const imageURL = await fileToURL(f)
@@ -63,21 +63,7 @@ export async function processEntry(
     textsFromImage
   )
 
-  const artifactCardImageData = verticallyCropArtifactCard(imageData)
-  const artifactCardCanvas = imageDataToCanvas(artifactCardImageData)
-
-  const whiteCardHistogram = histogramContAnalysis(
-    artifactCardImageData,
-    darkerColor(cardWhite),
-    lighterColor(cardWhite),
-    false
-  )
-  const [whiteCardTop, whiteCardBotOri] = findHistogramRange(
-    whiteCardHistogram,
-    0.8,
-    2
-  )
-  let whiteCardBot = whiteCardBotOri
+  if (debug) console.log(textPredictorResults.data)
 
   const equipHistogram = histogramContAnalysis(
     imageData,
@@ -85,34 +71,11 @@ export async function processEntry(
     lighterColor(equipColor),
     false
   )
-
-  const hasEquip = equipHistogram.some(
-    (i) => i > artifactCardImageData.width * 0.5
-  )
-  const [equipBot] = findHistogramRange(equipHistogram)
-
-  if (hasEquip) {
-    whiteCardBot = equipBot
-  } else {
-    // try to match green text.
-    // this value is not used because it can be noisy due to possible card background.
-
-    const greentextHisto = histogramAnalysis(
-      artifactCardImageData,
-      darkerColor(greenTextColor),
-      lighterColor(greenTextColor),
-      false
+  const equipped =
+    equipHistogram.some((i) => i > imageData.width * 0.5) ||
+    textPredictorResults.data.ArtifactLocation.some((item: string) =>
+      item.toLowerCase().includes('equipped')
     )
-
-    const [greenTextTop, greenTextBot] = findHistogramRange(greentextHisto, 0.2)
-    const greenTextBuffer = greenTextBot - greenTextTop
-    if (greenTextBot > whiteCardBot)
-      whiteCardBot = clamp(
-        greenTextBot + greenTextBuffer,
-        0,
-        artifactCardImageData.height
-      )
-  }
 
   const lockHisto = histogramAnalysis(
     await urlToImageData(textPredictorResults.debugImgs['ArtifactLock']),
@@ -123,10 +86,6 @@ export async function processEntry(
 
   const rarity = parseRarity(
     await urlToImageData(textPredictorResults.debugImgs['ArtifactRarity'])
-  )
-
-  const equipped = textPredictorResults.data.ArtifactLocation.some(
-    (item: string) => item.toLowerCase().includes('equipped')
   )
 
   const [artifact, texts] = findBestArtifact(
@@ -157,44 +116,8 @@ export async function processEntry(
     debugImgs: textPredictorResults.debugImgs,
   }
 }
-function verticallyCropArtifactCard(
-  imageData: ImageData,
-  debugImgs?: Record<string, string>
-) {
-  const histogram = histogramContAnalysis(
-    imageData,
-    darkerColor(cardWhite),
-    lighterColor(cardWhite)
-  )
 
-  const [a, b] = findHistogramRange(histogram)
-
-  const cropped = crop(imageDataToCanvas(imageData), { x1: a, x2: b })
-
-  if (debugImgs) {
-    const canvas = imageDataToCanvas(imageData)
-
-    drawHistogram(canvas, histogram, {
-      r: 255,
-      g: 0,
-      b: 0,
-      a: 100,
-    })
-    drawline(canvas, a, { r: 0, g: 255, b: 0, a: 150 })
-    drawline(canvas, b, { r: 0, g: 0, b: 255, a: 150 })
-
-    debugImgs['fullAnalysis'] = canvas.toDataURL()
-
-    // debugImgs['horicropped'] = imageDataToCanvas(cropped).toDataURL()
-  }
-
-  return cropped
-}
-
-function parseRarity(
-  headerData: ImageData,
-  debugImgs?: Record<string, string>
-) {
+function parseRarity(headerData: ImageData) {
   const hist = histogramContAnalysis(
     headerData,
     darkerColor(starColor),
@@ -213,11 +136,6 @@ function parseRarity(
     darkerColor(starColor),
     lighterColor(starColor)
   )
-  if (debugImgs) {
-    const canvas = imageDataToCanvas(stars)
-    drawHistogram(canvas, starsHistogram, { r: 100, g: 0, b: 0, a: 100 })
-    debugImgs['rarity'] = canvas.toDataURL()
-  }
   const maxThresh = Math.max(...starsHistogram) * 0.5
   let count = 0
   let onStar = false
