@@ -187,7 +187,11 @@ export function edgeDetection(imageData: ImageData): ImageData {
   return new ImageData(resultData, width, height)
 }
 
-export function findSplitHeight(bwImageData: ImageData): number {
+export function findSplitHeight(
+  bwImageData: ImageData,
+  match = 80,
+  startFromBottom = false
+): number {
   const width = bwImageData.width
   const height = bwImageData.height
   const data = bwImageData.data
@@ -195,7 +199,14 @@ export function findSplitHeight(bwImageData: ImageData): number {
   let splitHeight = 0
 
   // Start checking after some gap from the top
-  for (let y = 20; y < height; y++) {
+  const startY = startFromBottom ? height - 20 : 20
+  const endY = startFromBottom ? 0 : height
+
+  for (
+    let y = startY;
+    startFromBottom ? y >= endY : y < endY;
+    startFromBottom ? y-- : y++
+  ) {
     let whitePixelCount = 0
 
     for (let x = 0; x < width; x++) {
@@ -206,9 +217,9 @@ export function findSplitHeight(bwImageData: ImageData): number {
       }
     }
 
-    // Check if more than 80% of the pixels in the row are white
+    // Check if more than match% of the pixels in the row are white
     const whitePixelPercentage = (whitePixelCount / width) * 100
-    if (whitePixelPercentage > 80) {
+    if (whitePixelPercentage > match) {
       splitHeight = y
       break
     }
