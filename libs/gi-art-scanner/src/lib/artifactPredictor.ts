@@ -2,6 +2,7 @@ import {
   convertToBlackAndWhite,
   crop,
   imageDataToCanvas,
+  scaleImage,
 } from '@genshin-optimizer/img-util'
 
 type NewProcessed = {
@@ -28,6 +29,9 @@ export async function textOnlyPredictor(
       invert: true,
       bw: true,
       cropRight: false,
+      threshold: 160,
+      scale: false,
+      scaleFactor: 1,
     },
     {
       name: 'ArtifactSlot',
@@ -38,16 +42,22 @@ export async function textOnlyPredictor(
       invert: true,
       bw: true,
       cropRight: false,
+      threshold: 160,
+      scale: false,
+      scaleFactor: 1,
     },
     {
       name: 'ArtifactMainStat',
       start: 0.15,
-      end: 0.237,
+      end: 0.24,
       crop: 0.5,
       ocr: true,
       invert: true,
       bw: true,
       cropRight: false,
+      threshold: 200,
+      scale: true,
+      scaleFactor: 4,
     },
     {
       name: 'ArtifactRarity',
@@ -58,6 +68,9 @@ export async function textOnlyPredictor(
       invert: true,
       bw: false,
       cropRight: false,
+      threshold: 128,
+      scale: false,
+      scaleFactor: 1,
     },
     {
       name: 'ArtifactLevel',
@@ -68,16 +81,22 @@ export async function textOnlyPredictor(
       invert: true,
       bw: true,
       cropRight: false,
+      threshold: 128,
+      scale: true,
+      scaleFactor: 2,
     },
     {
       name: 'ArtifactLock',
       start: 0.3,
       end: 0.36,
-      crop: 0.8,
+      crop: 0.75,
       ocr: false,
       invert: true,
       bw: false,
       cropRight: true,
+      threshold: 128,
+      scale: false,
+      scaleFactor: 1,
     },
     {
       name: 'ArtifactSubstats',
@@ -88,6 +107,9 @@ export async function textOnlyPredictor(
       invert: false,
       bw: true,
       cropRight: false,
+      threshold: 160,
+      scale: false,
+      scaleFactor: 1,
     },
     {
       name: 'ArtifactSet',
@@ -98,6 +120,9 @@ export async function textOnlyPredictor(
       invert: false,
       bw: true,
       cropRight: false,
+      threshold: 160,
+      scale: false,
+      scaleFactor: 1,
     },
     {
       name: 'ArtifactLocation',
@@ -108,6 +133,9 @@ export async function textOnlyPredictor(
       invert: false,
       bw: true,
       cropRight: false,
+      threshold: 160,
+      scale: false,
+      scaleFactor: 1,
     },
   ]
 
@@ -123,12 +151,19 @@ export async function textOnlyPredictor(
       y1: Math.floor(segment.start * totalHeight),
       y2: Math.floor(segment.end * totalHeight),
     })
-    const bwRes = segment.bw ? convertToBlackAndWhite(res, segment.invert) : res
+    const bwRes = segment.bw
+      ? convertToBlackAndWhite(res, segment.invert, segment.threshold)
+      : res
+    const scaledRes = segment.scale
+      ? scaleImage(bwRes, segment.scaleFactor)
+      : bwRes
     debugImgs[ArtifactDetections[index].name] =
-      imageDataToCanvas(bwRes).toDataURL()
+      imageDataToCanvas(scaledRes).toDataURL()
     return {
       name: segment.name,
-      textPromise: segment.ocr ? textsFromImage(bwRes) : Promise.resolve(['']),
+      textPromise: segment.ocr
+        ? textsFromImage(scaledRes)
+        : Promise.resolve(['']),
     }
   })
 

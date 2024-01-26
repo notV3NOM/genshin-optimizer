@@ -96,3 +96,30 @@ export function convertToBlackAndWhite(
 
   return inputImageData
 }
+
+export function scaleImage(
+  inputImageData: ImageData,
+  scaleFactor: number
+): ImageData {
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.floor(inputImageData.width * scaleFactor)
+  canvas.height = Math.floor(inputImageData.height * scaleFactor)
+
+  const ctx = canvas.getContext('2d')
+  if (ctx) {
+    ctx.drawImage(
+      imageDataToCanvas(inputImageData),
+      0,
+      0,
+      inputImageData.width,
+      inputImageData.height,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    )
+    return ctx.getImageData(0, 0, canvas.width, canvas.height)
+  } else {
+    return inputImageData
+  }
+}
