@@ -1,6 +1,7 @@
 import {
   convertToBlackAndWhite,
   crop,
+  extractBox,
   imageDataToCanvas,
   scaleImage,
 } from '@genshin-optimizer/img-util'
@@ -32,6 +33,9 @@ export async function textOnlyPredictor(
       threshold: 160,
       scale: false,
       scaleFactor: 1,
+      extractBox: true,
+      extractColor: 'black',
+      padding: 10,
     },
     {
       name: 'ArtifactSlot',
@@ -45,10 +49,29 @@ export async function textOnlyPredictor(
       threshold: 160,
       scale: false,
       scaleFactor: 1,
+      extractBox: true,
+      extractColor: 'black',
+      padding: 10,
     },
     {
       name: 'ArtifactMainStat',
       start: 0.15,
+      end: 0.19,
+      crop: 0.5,
+      ocr: true,
+      invert: true,
+      bw: true,
+      cropRight: false,
+      threshold: 128,
+      scale: true,
+      scaleFactor: 2,
+      extractBox: true,
+      extractColor: 'black',
+      padding: 10,
+    },
+    {
+      name: 'ArtifactMainStatValue',
+      start: 0.19,
       end: 0.24,
       crop: 0.5,
       ocr: true,
@@ -58,12 +81,15 @@ export async function textOnlyPredictor(
       threshold: 160,
       scale: true,
       scaleFactor: 4,
+      extractBox: true,
+      extractColor: 'black',
+      padding: 10,
     },
     {
       name: 'ArtifactRarity',
       start: 0.237,
       end: 0.285,
-      crop: 0.5,
+      crop: 0.4,
       ocr: false,
       invert: true,
       bw: false,
@@ -71,6 +97,9 @@ export async function textOnlyPredictor(
       threshold: 128,
       scale: false,
       scaleFactor: 1,
+      extractBox: false,
+      extractColor: 'white',
+      padding: 10,
     },
     {
       name: 'ArtifactLevel',
@@ -84,6 +113,9 @@ export async function textOnlyPredictor(
       threshold: 128,
       scale: true,
       scaleFactor: 2,
+      extractBox: true,
+      extractColor: 'white',
+      padding: 0,
     },
     {
       name: 'ArtifactLock',
@@ -97,6 +129,9 @@ export async function textOnlyPredictor(
       threshold: 128,
       scale: false,
       scaleFactor: 1,
+      extractBox: false,
+      extractColor: 'white',
+      padding: 0,
     },
     {
       name: 'ArtifactSubstats',
@@ -110,6 +145,9 @@ export async function textOnlyPredictor(
       threshold: 160,
       scale: false,
       scaleFactor: 1,
+      extractBox: true,
+      extractColor: 'black',
+      padding: 10,
     },
     {
       name: 'ArtifactSet',
@@ -123,6 +161,9 @@ export async function textOnlyPredictor(
       threshold: 160,
       scale: false,
       scaleFactor: 1,
+      extractBox: true,
+      extractColor: 'black',
+      padding: 10,
     },
     {
       name: 'ArtifactLocation',
@@ -136,6 +177,9 @@ export async function textOnlyPredictor(
       threshold: 160,
       scale: false,
       scaleFactor: 1,
+      extractBox: true,
+      extractColor: 'black',
+      padding: 10,
     },
   ]
 
@@ -154,9 +198,16 @@ export async function textOnlyPredictor(
     const bwRes = segment.bw
       ? convertToBlackAndWhite(res, segment.invert, segment.threshold)
       : res
-    const scaledRes = segment.scale
-      ? scaleImage(bwRes, segment.scaleFactor)
+    const extractedBoxRes = segment.extractBox
+      ? extractBox(
+          bwRes,
+          segment.extractColor as 'white' | 'black',
+          segment.padding
+        )
       : bwRes
+    const scaledRes = segment.scale
+      ? scaleImage(extractedBoxRes, segment.scaleFactor)
+      : extractedBoxRes
     debugImgs[ArtifactDetections[index].name] =
       imageDataToCanvas(scaledRes).toDataURL()
     return {

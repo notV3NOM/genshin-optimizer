@@ -123,3 +123,65 @@ export function scaleImage(
     return inputImageData
   }
 }
+
+export function extractBox(
+  inputImageData: ImageData,
+  extractColor: 'white' | 'black',
+  pad: number
+): ImageData {
+  const inputWidth = inputImageData.width
+  const inputHeight = inputImageData.height
+  const inputData = inputImageData.data
+
+  // Find the bounding box of the specified color region
+  let minX = inputWidth
+  let minY = inputHeight
+  let maxX = 0
+  let maxY = 0
+
+  const targetColor = extractColor === 'white' ? [255, 255, 255] : [0, 0, 0]
+
+  for (let y = 0; y < inputHeight; y++) {
+    for (let x = 0; x < inputWidth; x++) {
+      const index = (y * inputWidth + x) * 4
+
+      const isTargetColor =
+        inputData[index] === targetColor[0] &&
+        inputData[index + 1] === targetColor[1] &&
+        inputData[index + 2] === targetColor[2]
+
+      if (isTargetColor) {
+        minX = Math.min(minX, x)
+        minY = Math.min(minY, y)
+        maxX = Math.max(maxX, x)
+        maxY = Math.max(maxY, y)
+      }
+    }
+  }
+
+  // Expand the bounding box by the specified padding
+  minX = Math.max(0, minX - pad)
+  minY = Math.max(0, minY - pad)
+  maxX = Math.min(inputWidth - 1, maxX + pad)
+  maxY = Math.min(inputHeight - 1, maxY + pad)
+
+  // Create a new ImageData to store the extracted color box
+  const extractedWidth = Math.abs(maxX - minX + 1)
+  const extractedHeight = Math.abs(maxY - minY + 1)
+  const extractedImageData = new ImageData(extractedWidth, extractedHeight)
+
+  // Copy the color box from the original ImageData to the new ImageData
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      const srcIndex = (y * inputWidth + x) * 4
+      const destIndex = ((y - minY) * extractedWidth + (x - minX)) * 4
+
+      extractedImageData.data[destIndex] = inputData[srcIndex]
+      extractedImageData.data[destIndex + 1] = inputData[srcIndex + 1]
+      extractedImageData.data[destIndex + 2] = inputData[srcIndex + 2]
+      extractedImageData.data[destIndex + 3] = inputData[srcIndex + 3]
+    }
+  }
+
+  return extractedImageData
+}

@@ -85,15 +85,18 @@ export async function processEntry(
     parseSlotKeys([
       ...textPredictorResults.data.ArtifactSlot,
       ...textPredictorResults.data.ArtifactMainStat,
+      ...textPredictorResults.data.ArtifactMainStatValue,
     ]),
     parseSubstats(textPredictorResults.data.ArtifactSubstats),
     parseMainStatKeys([
       ...textPredictorResults.data.ArtifactSlot,
       ...textPredictorResults.data.ArtifactMainStat,
+      ...textPredictorResults.data.ArtifactMainStatValue,
     ]),
     parseMainStatValues([
       ...textPredictorResults.data.ArtifactSlot,
       ...textPredictorResults.data.ArtifactMainStat,
+      ...textPredictorResults.data.ArtifactMainStatValue,
     ]),
     equipped ? parseLocation(textPredictorResults.data.ArtifactLocation) : '',
     locked
