@@ -1,12 +1,9 @@
 import type { IArtifact } from '@genshin-optimizer/gi-good'
 import { clamp } from '@genshin-optimizer/util'
 import type { ReactNode } from 'react'
-
 import {
   crop,
   darkerColor,
-  drawHistogram,
-  drawline,
   fileToURL,
   findHistogramRange,
   histogramAnalysis,
@@ -15,13 +12,7 @@ import {
   lighterColor,
   urlToImageData,
 } from '@genshin-optimizer/img-util'
-import {
-  cardWhite,
-  equipColor,
-  greenTextColor,
-  lockColor,
-  starColor,
-} from './consts'
+import { equipColor, lockColor, starColor } from './consts'
 import type { TextKey } from './findBestArtifact'
 import { findBestArtifact } from './findBestArtifact'
 import {

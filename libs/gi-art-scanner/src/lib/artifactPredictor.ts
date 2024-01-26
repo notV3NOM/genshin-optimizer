@@ -55,7 +55,7 @@ export async function textOnlyPredictor(
       invert: true,
       bw: true,
       cropRight: false,
-      threshold: 200,
+      threshold: 160,
       scale: true,
       scaleFactor: 4,
     },
