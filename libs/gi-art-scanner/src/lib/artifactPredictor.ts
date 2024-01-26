@@ -107,7 +107,7 @@ export async function textOnlyPredictor(
     edgeDetectedArtifactBody
   ).toDataURL()
   const splitHeightArtifactBody =
-    findSplitHeight(edgeDetectedArtifactBody, 1, true) + 5
+    findSplitHeight(edgeDetectedArtifactBody, 1, true, true) + 5
   const [ArtifactSubstats, ArtifactSet] = splitImageVertical(
     ArtifactBody,
     splitHeightArtifactBody
@@ -137,7 +137,7 @@ export async function textOnlyPredictor(
     {
       name: 'ArtifactSlot',
       start: 0,
-      end: 0.25,
+      end: 0.2,
       crop: 0.8,
       ocr: true,
       invert: true,
@@ -331,7 +331,7 @@ export async function textOnlyPredictor(
       })
       return {
         name: segment.name,
-        text: cleanedTextArray,
+        text: cleanedTextArray.length ? cleanedTextArray : [''],
       }
     })
   )

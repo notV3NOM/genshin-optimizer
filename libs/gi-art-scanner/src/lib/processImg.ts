@@ -190,7 +190,8 @@ export function edgeDetection(imageData: ImageData): ImageData {
 export function findSplitHeight(
   bwImageData: ImageData,
   match = 80,
-  startFromBottom = false
+  startFromBottom = false,
+  customStart = false
 ): number {
   const width = bwImageData.width
   const height = bwImageData.height
@@ -199,8 +200,9 @@ export function findSplitHeight(
   let splitHeight = 0
 
   // Start checking after some gap from the top
-  const startY = startFromBottom ? height - 20 : 20
+  let startY = startFromBottom ? height - 20 : 20
   const endY = startFromBottom ? 0 : height
+  startY = customStart ? Math.floor(height / 2 + height / 4) : startY
 
   for (
     let y = startY;
@@ -238,7 +240,7 @@ export function splitImageVertical(
   const canvas = document.createElement('canvas')
   canvas.width = imageData.width
   canvas.height = imageData.height
-  const ctx = canvas.getContext('2d')!
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!
   ctx.putImageData(imageData, 0, 0)
 
   const firstPartImageData = crop(canvas, { y1: 0, y2: splitHeight })
