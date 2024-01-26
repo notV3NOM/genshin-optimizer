@@ -5,6 +5,11 @@ import {
   imageDataToCanvas,
   scaleImage,
 } from '@genshin-optimizer/img-util'
+import {
+  edgeDetection,
+  findSplitHeight,
+  splitImageVertical,
+} from './processImg'
 
 type NewProcessed = {
   data: any
@@ -185,6 +190,73 @@ export async function textOnlyPredictor(
 
   const totalHeight = imageData.height
   const totalWidth = imageData.width
+
+  const edgeDetectedImageData = edgeDetection(
+    convertToBlackAndWhite(
+      new ImageData(
+        new Uint8ClampedArray(imageData.data),
+        imageData.width,
+        imageData.height
+      ),
+      false,
+      200
+    )
+  )
+
+  debugImgs['Edge Detection'] = imageDataToCanvas(
+    edgeDetectedImageData
+  ).toDataURL()
+  const splitHeight = findSplitHeight(edgeDetectedImageData)
+  const [headerCard, whiteCard] = splitImageVertical(imageData, splitHeight)
+  debugImgs['Header Card'] = imageDataToCanvas(headerCard).toDataURL()
+  debugImgs['White Card'] = imageDataToCanvas(whiteCard).toDataURL()
+
+  const edgeDetectedHeaderCard = edgeDetection(
+    convertToBlackAndWhite(
+      new ImageData(
+        new Uint8ClampedArray(headerCard.data),
+        headerCard.width,
+        headerCard.height
+      ),
+      false,
+      90
+    )
+  )
+  debugImgs['Header Card Edge Detection'] = imageDataToCanvas(
+    edgeDetectedHeaderCard
+  ).toDataURL()
+  const splitHeightHeaderCard = findSplitHeight(edgeDetectedHeaderCard)
+  const [ArtifactNameCard, ArtifactMainStatCard] = splitImageVertical(
+    headerCard,
+    splitHeightHeaderCard
+  )
+  debugImgs['Artifact Name Card'] =
+    imageDataToCanvas(ArtifactNameCard).toDataURL()
+  debugImgs['Artifact Main Stat Card'] =
+    imageDataToCanvas(ArtifactMainStatCard).toDataURL()
+
+  const edgeDetectedWhiteCard = edgeDetection(
+    convertToBlackAndWhite(
+      new ImageData(
+        new Uint8ClampedArray(whiteCard.data),
+        whiteCard.width,
+        whiteCard.height
+      ),
+      false,
+      225
+    )
+  )
+  debugImgs['White Card Edge Detection'] = imageDataToCanvas(
+    edgeDetectedWhiteCard
+  ).toDataURL()
+  const splitHeightWhiteCard = findSplitHeight(edgeDetectedWhiteCard)
+  const [ArtifactBody, ArtifactLocation] = splitImageVertical(
+    whiteCard,
+    splitHeightWhiteCard
+  )
+  debugImgs['Artifact Body'] = imageDataToCanvas(ArtifactBody).toDataURL()
+  debugImgs['Artifact Location'] =
+    imageDataToCanvas(ArtifactLocation).toDataURL()
 
   const imageSegments = ArtifactDetections.map((segment, index) => {
     const res = crop(imageDataToCanvas(imageData), {
