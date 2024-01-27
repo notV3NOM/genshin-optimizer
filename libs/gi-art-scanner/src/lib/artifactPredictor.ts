@@ -8,37 +8,42 @@ import {
   scaleImage,
   splitImageVertical,
 } from '@genshin-optimizer/img-util'
+import { artifactBoxPredictor } from './artifactBoxPredictor'
 
-type NewProcessed = {
-  data: any
+type artifactPredictorResult = {
+  prediction: any
   debugImgs: Record<string, string>
+  artifactImageData: ImageData
 }
 
 // const artifactAspectRatio = 1.73
-const artifactNameHeaderRatio = 0.19
+const artifactNameHeaderRatio = 0.2
 
-export async function newPredictor(
+export async function artifactPredictor(
   imageData: ImageData,
   textsFromImage: (
     imageData: ImageData,
     options?: object | undefined
   ) => Promise<string[]>
-): Promise<NewProcessed> {
-  const debugImgs = {} as Record<string, string>
+): Promise<artifactPredictorResult> {
+  const { artifactImageData, debugImgs } = artifactBoxPredictor(imageData)
 
   const edgeDetectedImageData = edgeDetection(
     convertToBlackAndWhite(
       new ImageData(
-        new Uint8ClampedArray(imageData.data),
-        imageData.width,
-        imageData.height
+        new Uint8ClampedArray(artifactImageData.data),
+        artifactImageData.width,
+        artifactImageData.height
       ),
       false,
       200
     )
   )
   const splitHeight = findSplitHeight(edgeDetectedImageData)
-  const [headerCard, whiteCard] = splitImageVertical(imageData, splitHeight)
+  const [headerCard, whiteCard] = splitImageVertical(
+    artifactImageData,
+    splitHeight
+  )
   const [ArtifactNameCard, ArtifactMainStatCard] = splitImageVertical(
     headerCard,
     artifactNameHeaderRatio * headerCard.height
@@ -248,7 +253,7 @@ export async function newPredictor(
     const totalHeight = segment.image.height
     const totalWidth = segment.image.width
     const res = crop(imageDataToCanvas(segment.image), {
-      x1: segment.cropRight ? Math.floor(segment.crop * totalWidth) : 0,
+      x1: segment.cropRight ? Math.floor(segment.crop * totalWidth) : 5,
       x2: segment.cropRight
         ? totalWidth
         : Math.floor(segment.crop * totalWidth),
@@ -298,7 +303,8 @@ export async function newPredictor(
   })
 
   return {
-    data: res,
+    prediction: res,
     debugImgs: debugImgs,
+    artifactImageData: artifactImageData,
   }
 }

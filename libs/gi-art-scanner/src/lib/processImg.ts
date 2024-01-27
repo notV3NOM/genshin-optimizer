@@ -23,7 +23,7 @@ import {
   parseSlotKeys,
   parseSubstats,
 } from './parse'
-import { newPredictor } from './artifactPredictor'
+import { artifactPredictor } from './artifactPredictor'
 
 export type Processed = {
   fileName: string
@@ -49,50 +49,51 @@ export async function processEntry(
   const imageURL = await fileToURL(f)
   const imageData = await urlToImageData(imageURL)
 
-  const textPredictorResults = await newPredictor(imageData, textsFromImage)
+  const { prediction, debugImgs, artifactImageData } = await artifactPredictor(
+    imageData,
+    textsFromImage
+  )
 
-  if (debug) console.log(textPredictorResults.data)
+  if (debug) console.log(prediction)
 
   const equipHistogram = histogramContAnalysis(
-    imageData,
+    artifactImageData,
     darkerColor(equipColor),
     lighterColor(equipColor),
     false
   )
   const equipped =
-    equipHistogram.some((i) => i > imageData.width * 0.5) ||
-    textPredictorResults.data.ArtifactLocation.some((item: string) =>
+    equipHistogram.some((i) => i > artifactImageData.width * 0.5) ||
+    prediction.ArtifactLocation.some((item: string) =>
       item.toLowerCase().includes('equipped')
     )
 
   const lockHisto = histogramAnalysis(
-    await urlToImageData(textPredictorResults.debugImgs['ArtifactLock']),
+    await urlToImageData(debugImgs['ArtifactLock']),
     darkerColor(lockColor),
     lighterColor(lockColor)
   )
   const locked = lockHisto.filter((v) => v > 5).length > 5
 
-  const rarity = parseRarity(
-    await urlToImageData(textPredictorResults.debugImgs['ArtifactRarity'])
-  )
+  const rarity = parseRarity(await urlToImageData(debugImgs['ArtifactRarity']))
 
   const [artifact, texts] = findBestArtifact(
     new Set([rarity]),
-    parseSetKeys([textPredictorResults.data.ArtifactSet[0]]),
-    parseSlotKeys(textPredictorResults.data.ArtifactSlot),
-    parseSubstats(textPredictorResults.data.ArtifactSubstats),
-    parseMainStatKeys(textPredictorResults.data.ArtifactMainStat),
-    parseMainStatValues(textPredictorResults.data.ArtifactMainStatValue),
-    equipped ? parseLocation(textPredictorResults.data.ArtifactLocation) : '',
+    parseSetKeys([prediction.ArtifactSet[0]]),
+    parseSlotKeys(prediction.ArtifactSlot),
+    parseSubstats(prediction.ArtifactSubstats),
+    parseMainStatKeys(prediction.ArtifactMainStat),
+    parseMainStatValues(prediction.ArtifactMainStatValue),
+    equipped ? parseLocation(prediction.ArtifactLocation) : '',
     locked
   )
 
   return {
     fileName: fName,
-    imageURL: imageDataToCanvas(imageData).toDataURL(),
+    imageURL: imageDataToCanvas(artifactImageData).toDataURL(),
     artifact,
     texts,
-    debugImgs: textPredictorResults.debugImgs,
+    debugImgs: debugImgs,
   }
 }
 
