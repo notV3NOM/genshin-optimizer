@@ -16,6 +16,9 @@ type NewProcessed = {
   debugImgs: Record<string, string>
 }
 
+// const artifactAspectRatio = 1.73
+const artifactNameHeaderRatio = 0.19
+
 export async function textOnlyPredictor(
   imageData: ImageData,
   textsFromImage: (
@@ -45,76 +48,31 @@ export async function textOnlyPredictor(
   debugImgs['Header Card'] = imageDataToCanvas(headerCard).toDataURL()
   debugImgs['White Card'] = imageDataToCanvas(whiteCard).toDataURL()
 
-  const edgeDetectedHeaderCard = edgeDetection(
-    convertToBlackAndWhite(
-      new ImageData(
-        new Uint8ClampedArray(headerCard.data),
-        headerCard.width,
-        headerCard.height
-      ),
-      false,
-      90
-    )
-  )
-  debugImgs['Header Card Edge Detection'] = imageDataToCanvas(
-    edgeDetectedHeaderCard
-  ).toDataURL()
-  const splitHeightHeaderCard = findSplitHeight(edgeDetectedHeaderCard)
   const [ArtifactNameCard, ArtifactMainStatCard] = splitImageVertical(
     headerCard,
-    splitHeightHeaderCard
+    artifactNameHeaderRatio * headerCard.height
   )
   debugImgs['Artifact Name Card'] =
     imageDataToCanvas(ArtifactNameCard).toDataURL()
   debugImgs['Artifact Main Stat Card'] =
     imageDataToCanvas(ArtifactMainStatCard).toDataURL()
 
-  const edgeDetectedWhiteCard = edgeDetection(
-    convertToBlackAndWhite(
-      new ImageData(
-        new Uint8ClampedArray(whiteCard.data),
-        whiteCard.width,
-        whiteCard.height
-      ),
-      false,
-      225
-    )
-  )
-  debugImgs['White Card Edge Detection'] = imageDataToCanvas(
-    edgeDetectedWhiteCard
-  ).toDataURL()
-  const splitHeightWhiteCard = findSplitHeight(edgeDetectedWhiteCard)
-  const [ArtifactBody, ArtifactLocation] = splitImageVertical(
+  const [ArtifactSubstats, ArtifactSetLocation] = splitImageVertical(
     whiteCard,
-    splitHeightWhiteCard
-  )
-  debugImgs['Artifact Body'] = imageDataToCanvas(ArtifactBody).toDataURL()
-  debugImgs['Artifact Location'] =
-    imageDataToCanvas(ArtifactLocation).toDataURL()
-
-  const edgeDetectedArtifactBody = edgeDetection(
-    convertToBlackAndWhite(
-      new ImageData(
-        new Uint8ClampedArray(ArtifactBody.data),
-        ArtifactBody.width,
-        ArtifactBody.height
-      ),
-      false,
-      100
-    )
-  )
-  debugImgs['Artifact Body Edge Detection'] = imageDataToCanvas(
-    edgeDetectedArtifactBody
-  ).toDataURL()
-  const splitHeightArtifactBody =
-    findSplitHeight(edgeDetectedArtifactBody, 1, true, true) + 5
-  const [ArtifactSubstats, ArtifactSet] = splitImageVertical(
-    ArtifactBody,
-    splitHeightArtifactBody
+    ArtifactMainStatCard.height
   )
   debugImgs['Artifact Substats'] =
     imageDataToCanvas(ArtifactSubstats).toDataURL()
+  debugImgs['Artifact Set & Location'] =
+    imageDataToCanvas(ArtifactSetLocation).toDataURL()
+
+  const [ArtifactSet, ArtifactLocation] = splitImageVertical(
+    ArtifactSetLocation,
+    ArtifactSetLocation.height - ArtifactNameCard.height
+  )
   debugImgs['Artifact Set'] = imageDataToCanvas(ArtifactSet).toDataURL()
+  debugImgs['Artifact Location'] =
+    imageDataToCanvas(ArtifactLocation).toDataURL()
 
   const ArtifactDetections = [
     {
