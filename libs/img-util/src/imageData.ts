@@ -185,3 +185,88 @@ export function extractBox(
 
   return extractedImageData
 }
+
+// Function to perform basic edge detection using the Sobel operator
+export function edgeDetection(imageData: ImageData): ImageData {
+  const width = imageData.width
+  const height = imageData.height
+  const data = imageData.data
+
+  const sobelKernelX = [-1, 0, 1, -2, 0, 2, -1, 0, 1]
+  const sobelKernelY = [-1, -2, -1, 0, 0, 0, 1, 2, 1]
+
+  const resultData = new Uint8ClampedArray(data)
+
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      let sumX = 0
+      let sumY = 0
+
+      for (let ky = 0; ky < 3; ky++) {
+        for (let kx = 0; kx < 3; kx++) {
+          const idx = ((y + ky - 1) * width + (x + kx - 1)) * 4
+          const weightX = sobelKernelX[ky * 3 + kx]
+          const weightY = sobelKernelY[ky * 3 + kx]
+
+          sumX += data[idx] * weightX
+          sumY += data[idx] * weightY
+        }
+      }
+
+      const magnitude = Math.sqrt(sumX * sumX + sumY * sumY)
+      const index = (y * width + x) * 4
+
+      resultData[index] = magnitude
+      resultData[index + 1] = magnitude
+      resultData[index + 2] = magnitude
+    }
+  }
+
+  return new ImageData(resultData, width, height)
+}
+
+export function findSplitHeight(bwImageData: ImageData, match = 80): number {
+  const width = bwImageData.width
+  const height = bwImageData.height
+  const data = bwImageData.data
+  let splitHeight = 0
+
+  // Start checking after some gap from the top
+  for (let y = 20; y < height; y++) {
+    let whitePixelCount = 0
+    for (let x = 0; x < width; x++) {
+      const isWhitePixel = data[(y * width + x) * 4] === 255
+      if (isWhitePixel) whitePixelCount++
+    }
+    // Check if more than match% of the pixels in the row are white
+    const whitePixelPercentage = (whitePixelCount / width) * 100
+    if (whitePixelPercentage > match) {
+      splitHeight = y
+      break
+    }
+  }
+
+  return splitHeight
+}
+
+export function splitImageVertical(
+  imageData: ImageData,
+  splitHeight: number
+): ImageData[] {
+  if (splitHeight === 0) {
+    return [imageData, new ImageData(imageData.width, 1)]
+  }
+  const canvas = document.createElement('canvas')
+  canvas.width = imageData.width
+  canvas.height = imageData.height
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!
+  ctx.putImageData(imageData, 0, 0)
+
+  const firstPartImageData = crop(canvas, { y1: 0, y2: splitHeight })
+  const secondPartImageData = crop(canvas, {
+    y1: splitHeight,
+    y2: imageData.height,
+  })
+
+  return [firstPartImageData, secondPartImageData]
+}

@@ -1,15 +1,13 @@
 import {
   convertToBlackAndWhite,
   crop,
+  edgeDetection,
   extractBox,
+  findSplitHeight,
   imageDataToCanvas,
   scaleImage,
-} from '@genshin-optimizer/img-util'
-import {
-  edgeDetection,
-  findSplitHeight,
   splitImageVertical,
-} from './processImg'
+} from '@genshin-optimizer/img-util'
 
 type NewProcessed = {
   data: any
@@ -19,7 +17,7 @@ type NewProcessed = {
 // const artifactAspectRatio = 1.73
 const artifactNameHeaderRatio = 0.19
 
-export async function textOnlyPredictor(
+export async function newPredictor(
   imageData: ImageData,
   textsFromImage: (
     imageData: ImageData,
@@ -39,41 +37,39 @@ export async function textOnlyPredictor(
       200
     )
   )
-
-  debugImgs['Edge Detection'] = imageDataToCanvas(
-    edgeDetectedImageData
-  ).toDataURL()
   const splitHeight = findSplitHeight(edgeDetectedImageData)
   const [headerCard, whiteCard] = splitImageVertical(imageData, splitHeight)
-  debugImgs['Header Card'] = imageDataToCanvas(headerCard).toDataURL()
-  debugImgs['White Card'] = imageDataToCanvas(whiteCard).toDataURL()
-
   const [ArtifactNameCard, ArtifactMainStatCard] = splitImageVertical(
     headerCard,
     artifactNameHeaderRatio * headerCard.height
   )
-  debugImgs['Artifact Name Card'] =
-    imageDataToCanvas(ArtifactNameCard).toDataURL()
-  debugImgs['Artifact Main Stat Card'] =
-    imageDataToCanvas(ArtifactMainStatCard).toDataURL()
-
   const [ArtifactSubstats, ArtifactSetLocation] = splitImageVertical(
     whiteCard,
     ArtifactMainStatCard.height
   )
-  debugImgs['Artifact Substats'] =
-    imageDataToCanvas(ArtifactSubstats).toDataURL()
-  debugImgs['Artifact Set & Location'] =
-    imageDataToCanvas(ArtifactSetLocation).toDataURL()
-
   const [ArtifactSet, ArtifactLocation] = splitImageVertical(
     ArtifactSetLocation,
     ArtifactSetLocation.height - ArtifactNameCard.height
   )
+
+  debugImgs['Edge Detection'] = imageDataToCanvas(
+    edgeDetectedImageData
+  ).toDataURL()
+  debugImgs['Header Card'] = imageDataToCanvas(headerCard).toDataURL()
+  debugImgs['White Card'] = imageDataToCanvas(whiteCard).toDataURL()
+  debugImgs['Artifact Name Card'] =
+    imageDataToCanvas(ArtifactNameCard).toDataURL()
+  debugImgs['Artifact Main Stat Card'] =
+    imageDataToCanvas(ArtifactMainStatCard).toDataURL()
+  debugImgs['Artifact Substats'] =
+    imageDataToCanvas(ArtifactSubstats).toDataURL()
+  debugImgs['Artifact Set & Location'] =
+    imageDataToCanvas(ArtifactSetLocation).toDataURL()
   debugImgs['Artifact Set'] = imageDataToCanvas(ArtifactSet).toDataURL()
   debugImgs['Artifact Location'] =
     imageDataToCanvas(ArtifactLocation).toDataURL()
 
+  // Data about each part of the Artifact
   const ArtifactDetections = [
     {
       name: 'ArtifactName',
@@ -247,6 +243,7 @@ export async function textOnlyPredictor(
     },
   ]
 
+  // Processing Pipeline
   const imageSegments = ArtifactDetections.map((segment, index) => {
     const totalHeight = segment.image.height
     const totalWidth = segment.image.width
@@ -281,6 +278,7 @@ export async function textOnlyPredictor(
     }
   })
 
+  // OCR
   const segmentTexts = await Promise.all(
     imageSegments.map(async (segment) => {
       const textArray = await segment.textPromise
