@@ -57,6 +57,7 @@ type CharacterCardProps = {
   characterChildren?: Displayable
   footer?: Displayable
   hideStats?: boolean
+  hideArtifacts?: boolean
   isTeammateCard?: boolean
 }
 export default function CharacterCard({
@@ -69,6 +70,7 @@ export default function CharacterCard({
   onClickTeammate,
   footer,
   hideStats,
+  hideArtifacts,
   isTeammateCard,
 }: CharacterCardProps) {
   const { database } = useContext(DatabaseContext)
@@ -157,6 +159,7 @@ export default function CharacterCard({
               character={character}
               onClickTeammate={onClickTeammate}
               hideStats={hideStats}
+              hideArtifacts={hideArtifacts}
               weaponChildren={weaponChildren}
               artifactChildren={artifactChildren}
               characterChildren={characterChildren}
@@ -181,6 +184,7 @@ type ExistingCharacterCardContentProps = {
   character: ICachedCharacter
   onClickTeammate?: (characterKey: CharacterKey) => void
   hideStats?: boolean
+  hideArtifacts?: boolean
   weaponChildren?: Displayable
   artifactChildren?: Displayable
   characterChildren?: Displayable
@@ -195,6 +199,7 @@ function ExistingCharacterCardContent({
   character,
   onClickTeammate,
   hideStats,
+  hideArtifacts,
   weaponChildren,
   artifactChildren,
   characterChildren,
@@ -218,7 +223,7 @@ function ExistingCharacterCardContent({
             padding: hideStats ? `${theme.spacing(1)}!important` : undefined,
           })}
         >
-          <Artifacts />
+          {!hideArtifacts && <Artifacts />}
           {!isTeammateCard && (
             <Grid container columns={4} spacing={0.75}>
               <Grid item xs={1} height="100%">
