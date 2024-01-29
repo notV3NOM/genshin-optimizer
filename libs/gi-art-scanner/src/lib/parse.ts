@@ -27,14 +27,10 @@ export function parseSetKeys(texts: string[]): Set<ArtifactSetKey> {
   const kdist: Array<KeyDist<ArtifactSetKey>> = []
   for (const text of texts)
     for (const key of allArtifactSetKeys)
-      kdist.push([
-        key,
-        levenshteinDistance(
-          text.replace(/\W/g, ''),
-          key //TODO: use the translated set name?
-        ),
-      ])
-  return getBestKeyDist(kdist)
+      kdist.push([key, levenshteinDistance(text.replace(/\W/g, ''), key)])
+  const bestMatch = getBestKeyDist(kdist)
+  console.log('Best Match for Set ', bestMatch)
+  return bestMatch
 }
 
 export function parseSlotKeys(texts: string[]): Set<ArtifactSlotKey> {
@@ -48,15 +44,18 @@ export function parseSlotKeys(texts: string[]): Set<ArtifactSlotKey> {
           artSlotNames[key].replace(/\W/g, '')
         ),
       ])
-  return getBestKeyDist(kdist)
+  const bestMatch = getBestKeyDist(kdist)
+  console.log('Best Match for Slot ', bestMatch)
+  return bestMatch
 }
+
 export function parseMainStatKeys(texts: string[]): Set<MainStatKey> {
   const kdist: Array<KeyDist<MainStatKey>> = []
   for (const text of texts)
     for (const key of allMainStatKeys) {
       const statStr = statMap[key]?.toLowerCase()
       if (statStr.length <= 3) {
-        if (text.toLowerCase().includes(statStr ?? '')) kdist.push([key, 0])
+        if (text.toLowerCase().includes(statStr)) kdist.push([key, 0])
       } else
         kdist.push([
           key,
@@ -66,8 +65,11 @@ export function parseMainStatKeys(texts: string[]): Set<MainStatKey> {
           ),
         ])
     }
-  return getBestKeyDist(kdist)
+  const bestMatch = getBestKeyDist(kdist)
+  console.log('Best Match for Main Stat ', bestMatch)
+  return bestMatch
 }
+
 export function parseMainStatValues(
   texts: string[]
 ): { mainStatValue: number; unit?: string }[] {
@@ -89,6 +91,7 @@ export function parseMainStatValues(
         mainStatValue: parseInt(match[1].replace(/[,|\\.]+/g, '')),
       })
   }
+  console.log('Best Match for Main Stat Value ', results)
   return results
 }
 
@@ -113,6 +116,7 @@ export function parseSubstats(texts: string[]): ISubstat[] {
         })
     })
   }
+  console.log('Best Match for Substats ', matches.slice(0, 4))
   return matches.slice(0, 4)
 }
 
@@ -137,5 +141,6 @@ export function parseLocation(texts: string[]): LocationCharacterKey {
   // traveler is the default value when we don't recognize the name
   kdist.push(['Traveler', 8])
   const [char] = getBestKeyDist(kdist)
+  console.log('Best Match for Equipped ', char)
   return char
 }
