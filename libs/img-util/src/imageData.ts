@@ -266,3 +266,46 @@ export function splitImageVertical(
 
   return [firstPartImageData, secondPartImageData]
 }
+
+export function findGreenSplitHeight(
+  imageData: ImageData,
+  batchSize = 5,
+  threshold = 50
+): number {
+  const width = imageData.width
+  const height = imageData.height
+  const data = imageData.data
+  let maxGreennessHeight = -1
+  let maxGreennessValue = 0
+
+  for (let y = 0; y < height; y += batchSize) {
+    let batchGreennessCount = 0
+
+    // Process the batch of lines
+    for (
+      let batchIndex = 0;
+      batchIndex < batchSize && y + batchIndex < height;
+      batchIndex++
+    ) {
+      let greennessCount = 0
+      for (let x = 0; x < width; x++) {
+        const index = ((y + batchIndex) * width + x) * 4
+        const red = data[index]
+        const green = data[index + 1]
+        const blue = data[index + 2]
+        const greenness = green - (red + blue) / 2
+        if (greenness > threshold) {
+          greennessCount++
+        }
+      }
+      batchGreennessCount += greennessCount
+    }
+    // Update max greenness height if the current batch has higher greenness
+    if (batchGreennessCount > maxGreennessValue) {
+      maxGreennessValue = batchGreennessCount
+      maxGreennessHeight = y
+    }
+  }
+
+  return maxGreennessHeight
+}
