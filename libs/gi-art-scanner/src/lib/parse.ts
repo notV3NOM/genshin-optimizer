@@ -74,7 +74,9 @@ export function parseMainStatValues(
   texts: string[]
 ): { mainStatValue: number; unit?: string }[] {
   const results: { mainStatValue: number; unit?: string }[] = []
-  for (const text of texts) {
+  for (let text of texts) {
+    //We know that it will be a number with , or % or .
+    text = text.replace(/[^0-9%,.]/g, '1')
     let regex = /(\d+[,|\\.]+\d)%/
     let match = regex.exec(text)
     if (match)

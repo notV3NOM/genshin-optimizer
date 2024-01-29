@@ -3,6 +3,7 @@ import {
   crop,
   edgeDetection,
   extractBox,
+  findGreenSplitHeight,
   findSplitHeight,
   imageDataToCanvas,
   scaleImage,
@@ -48,9 +49,10 @@ export async function artifactPredictor(
     headerCard,
     artifactNameHeaderRatio * headerCard.height
   )
+  const greenSplitHeight = findGreenSplitHeight(whiteCard, 20)
   const [ArtifactSubstats, ArtifactSetLocation] = splitImageVertical(
     whiteCard,
-    ArtifactMainStatCard.height
+    greenSplitHeight - ArtifactNameCard.height / 4
   )
   const [ArtifactSet, ArtifactLocation] = splitImageVertical(
     ArtifactSetLocation,
