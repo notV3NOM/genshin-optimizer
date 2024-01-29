@@ -83,7 +83,6 @@ import SubstatInput from './ArtifactEditor/Components/SubstatInput'
 import UploadExplainationModal from './ArtifactEditor/Components/UploadExplainationModal'
 import { textsFromImage } from './ScanningUtil'
 import { LocationAutocomplete } from '../Components/Character/LocationAutocomplete'
-import { shouldShowDevComponents } from '../Util/Util'
 
 const allSubstatFilter = new Set(allSubstatKeys)
 type ResetMessage = { type: 'reset' }
@@ -144,9 +143,7 @@ export default function ArtifactEditor({
   disableSet = false,
   disableSlot = false,
 }: ArtifactEditorProps) {
-  const queueRef = useRef(
-    new ScanningQueue(textsFromImage, shouldShowDevComponents)
-  )
+  const queueRef = useRef(new ScanningQueue(textsFromImage, true))
   const queue = queueRef.current
   const { t } = useTranslation('artifact')
 
@@ -594,7 +591,7 @@ export default function ArtifactEditor({
                             </Button>
                           </label>
                         </Grid>
-                        {shouldShowDevComponents && debugImgs && (
+                        {debugImgs && (
                           <Grid item>
                             <DebugModal imgs={debugImgs} />
                           </Grid>

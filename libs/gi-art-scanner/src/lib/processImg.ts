@@ -54,7 +54,7 @@ export async function processEntry(
     textsFromImage
   )
 
-  if (debug) console.log(prediction)
+  if (debug) console.log('OCR Prediction', prediction)
 
   const equipHistogram = histogramContAnalysis(
     artifactImageData,
