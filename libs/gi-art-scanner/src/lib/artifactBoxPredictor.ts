@@ -22,10 +22,7 @@ export function artifactBoxPredictor(
 ): artifactPredictorResult {
   const debugImgs = {} as Record<string, string>
 
-  imageData =
-    imageData.width > imageData.height
-      ? boxPredictor(imageData, debugImgs)
-      : imageData
+  imageData = boxPredictor(convertToLandscape(imageData), debugImgs)
 
   return {
     artifactImageData: imageData,
@@ -128,4 +125,31 @@ function findLargestRectangle(imageData: ImageData): Rectangle {
   }
 
   return maxRectangle
+}
+
+function convertToLandscape(inputImageData: ImageData): ImageData {
+  const originalWidth = inputImageData.width
+  const originalHeight = inputImageData.height
+
+  // Check if the image is already landscape
+  if (originalWidth > originalHeight) {
+    return inputImageData
+  }
+
+  const enlargedWidth = Math.max(originalWidth, originalHeight) + 20
+  const enlargedHeight = Math.max(originalWidth, originalHeight) + 20
+  const canvas = document.createElement('canvas')
+  canvas.width = enlargedWidth
+  canvas.height = enlargedHeight
+  const ctx = canvas.getContext('2d')!
+
+  const xPadding = Math.floor((enlargedWidth - originalWidth) / 2)
+  const yPadding = Math.floor((enlargedHeight - originalHeight) / 2)
+
+  ctx.fillStyle = 'black'
+  ctx.fillRect(0, 0, enlargedWidth, enlargedHeight)
+
+  ctx.putImageData(inputImageData, xPadding, yPadding)
+
+  return ctx.getImageData(0, 0, enlargedWidth, enlargedHeight)
 }
