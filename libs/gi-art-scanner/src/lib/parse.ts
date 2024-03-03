@@ -23,13 +23,31 @@ export function getBestKeyDist<T extends string>(hams: Array<KeyDist<T>>) {
   return new Set(keys)
 }
 
+export function getBestKeyDistWithConfidence<T extends string>(
+  hams: Array<KeyDist<T>>,
+  length: number
+) {
+  const minHam = Math.min(...hams.map(([, ham]) => ham))
+  const keys = hams.filter(([, ham]) => ham === minHam).map(([key]) => key)
+  return {
+    bestMatch: new Set(keys),
+    confidence: (3 * length - minHam) / (3 * length),
+  }
+}
+
 export function parseSetKeys(texts: string[]): Set<ArtifactSetKey> {
   const kdist: Array<KeyDist<ArtifactSetKey>> = []
-  for (const text of texts)
-    for (const key of allArtifactSetKeys)
+  for (const text of texts) {
+    for (const key of allArtifactSetKeys) {
       kdist.push([key, levenshteinDistance(text.replace(/\W/g, ''), key)])
-  const bestMatch = getBestKeyDist(kdist)
-  console.log('Best Match for Set ', bestMatch)
+    }
+  }
+
+  const { bestMatch, confidence } = getBestKeyDistWithConfidence(
+    kdist,
+    texts[0].replace(/\W/g, '').length
+  )
+
   return bestMatch
 }
 
@@ -131,13 +149,7 @@ export function parseLocation(texts: string[]): LocationCharacterKey {
     if (!text) continue
 
     for (const key of allLocationCharacterKeys)
-      kdist.push([
-        key,
-        levenshteinDistance(
-          text.replace(/\W/g, ''),
-          key //TODO: use the translated character name?
-        ),
-      ])
+      kdist.push([key, levenshteinDistance(text.replace(/\W/g, ''), key)])
   }
 
   // traveler is the default value when we don't recognize the name
